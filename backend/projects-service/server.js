@@ -67,7 +67,7 @@ async function startApolloServer() {
 
   const PORT = process.env.PORT || 4002;   
   await new Promise((resolve) => httpServer.listen({ port: PORT }, resolve));
-  console.log(`🚀 Subgraph ready at http://localhost:${PORT}/graphql`);
+  console.log(` Subgraph ready at http://localhost:${PORT}/graphql`);
 }
 
 startApolloServer().catch(console.error);

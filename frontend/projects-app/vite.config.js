@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import federation from '@originjs/vite-plugin-federation'
 import tailwindcss from '@tailwindcss/vite'
+import { federation } from '@module-federation/vite'
 
 export default defineConfig({
   plugins: [
@@ -11,8 +11,15 @@ export default defineConfig({
       name: 'projects',
       filename: 'remoteEntry.js',
       exposes: { './App': './src/App.jsx' },
-      shared: ['react', 'react-dom', '@apollo/client']
+      shared: {
+        react: { singleton: true, eager: true },
+        'react-dom': { singleton: true, eager: true },
+        'react-router-dom': { singleton: true, eager: true },
+        '@apollo/client': { singleton: true, eager: true },
+      }
     })
   ],
-  server: { port: 3001 }
+  build: { target: 'esnext' },
+  server: { port: 3001 },
+  preview: { port: 3001 }
 })

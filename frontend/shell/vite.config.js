@@ -1,24 +1,36 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import federation from '@originjs/vite-plugin-federation'
+import tailwindcss from '@tailwindcss/vite'
+import { federation } from '@module-federation/vite'
 
 export default defineConfig({
   plugins: [
     react(),
+    tailwindcss(),
     federation({
       name: 'shell',
       remotes: {
-        projects: 'http://localhost:3001/assets/remoteEntry.js',
-        aiReview: 'http://localhost:3002/assets/remoteEntry.js'
+        projects: {
+          type: 'module',
+          name: 'projects',
+          entry: 'http://localhost:3001/remoteEntry.js',
+        },
+        aiReview: {
+          type: 'module',
+          name: 'aiReview',
+          entry: 'http://localhost:3002/remoteEntry.js',
+        }
       },
       shared: {
-        react: { singleton: true, requiredVersion: '^18.0.0' },
-        'react-dom': { singleton: true, requiredVersion: '^18.0.0' },
-        // Do NOT share @apollo/client — this fixes the export error
-        graphql: { singleton: true },
-        rxjs: { singleton: true }
+        react: { singleton: true, eager: true },
+        'react-dom': { singleton: true, eager: true },
+        'react-router-dom': { singleton: true, eager: true },
+        '@apollo/client': { singleton: true, eager: true },
+        rxjs: { singleton: true, eager: true }
       }
     })
   ],
-  server: { port: 3000 }
+  build: { target: 'esnext' },
+  server: { port: 3000 },
+  preview: { port: 3000 }
 })

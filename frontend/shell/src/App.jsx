@@ -1,6 +1,8 @@
 import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-router-dom';
 import { Suspense, lazy, useState, useEffect } from 'react';
-import LoginForm from './components/LoginForm';   // ← Make sure this line exists
+import { ApolloProvider } from '@apollo/client';
+import client from './apolloClient';
+import LoginForm from './components/LoginForm';
 
 const ProjectsApp = lazy(() => import('projects/App'));
 const AIReviewApp = lazy(() => import('aiReview/App'));
@@ -10,29 +12,27 @@ export default function App() {
   const [loading, setLoading] = useState(true);
 
   const fetchCurrentUser = async () => {
-  try {
-    const res = await fetch('http://localhost:4000/graphql', {
-      method: 'POST',
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        query: `{ currentUser { id username role } }`
-      })
-    });
+    try {
+      const res = await fetch('http://localhost:4000/graphql', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          query: `{ currentUser { id username role } }`
+        })
+      });
 
-    const json = await res.json();
-
-    setCurrentUser(json.data?.currentUser || null);
-  } catch (err) {
-    console.error("Fetch failed with error:", err);
-    setCurrentUser(null);
-  } finally {
-    setLoading(false);
-  }
-};
+      const json = await res.json();
+      console.log('👤 fetchCurrentUser response:', json); // ← add this
+      setCurrentUser(json.data?.currentUser || null);
+    } catch (err) {
+      console.error("Fetch failed with error:", err);
+      setCurrentUser(null);
+    }
+  };
 
   useEffect(() => {
-    fetchCurrentUser();
+    fetchCurrentUser().finally(() => setLoading(false));
   }, []);
 
   const handleLogout = async () => {
@@ -63,7 +63,7 @@ export default function App() {
           {isLoggedIn ? (
             <div className="flex items-center gap-4">
               <span className="text-gray-700">Hello, {currentUser.username}</span>
-              <button 
+              <button
                 onClick={handleLogout}
                 className="bg-red-500 hover:bg-red-600 text-white px-5 py-2 rounded"
               >
@@ -77,19 +77,25 @@ export default function App() {
 
         <Routes>
           <Route path="/" element={
-            isLoggedIn ? <Navigate to="/projects" /> : <LoginForm onSuccess={fetchCurrentUser} />
+            isLoggedIn
+              ? <Navigate to="/projects" />
+              : <LoginForm onSuccess={fetchCurrentUser} redirectTo="/projects" />
           } />
           <Route path="/projects" element={
             isLoggedIn ? (
               <Suspense fallback={<div className="p-20 text-center text-xl">Loading Projects App...</div>}>
-                <ProjectsApp />
+                <ApolloProvider client={client}>
+                  <ProjectsApp />
+                </ApolloProvider>
               </Suspense>
             ) : <Navigate to="/" />
           } />
           <Route path="/ai-review" element={
             isLoggedIn ? (
               <Suspense fallback={<div className="p-20 text-center text-xl">Loading AI Review...</div>}>
-                <AIReviewApp />
+                <ApolloProvider client={client}>
+                  <AIReviewApp />
+                </ApolloProvider>
               </Suspense>
             ) : <Navigate to="/" />
           } />
