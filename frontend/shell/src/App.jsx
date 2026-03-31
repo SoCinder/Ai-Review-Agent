@@ -52,55 +52,53 @@ export default function App() {
   const isLoggedIn = !!currentUser;
 
   return (
-    <Router>
-      <div className="min-h-screen bg-gray-50">
-        <nav className="bg-white shadow p-4 flex justify-between items-center">
-          <h1 className="text-3xl font-bold text-blue-600">DevPilot 2026</h1>
-          <div className="flex gap-8 text-lg">
-            <Link to="/projects" className="hover:text-blue-600">Projects</Link>
-            <Link to="/ai-review" className="hover:text-blue-600">AI Review</Link>
-          </div>
-          {isLoggedIn ? (
-            <div className="flex items-center gap-4">
-              <span className="text-gray-700">Hello, {currentUser.username}</span>
-              <button
-                onClick={handleLogout}
-                className="bg-red-500 hover:bg-red-600 text-white px-5 py-2 rounded"
-              >
-                Logout
-              </button>
+    <ApolloProvider client={client}>
+      <Router>
+        <div className="min-h-screen bg-gray-50">
+          <nav className="bg-white shadow p-4 flex justify-between items-center">
+            <h1 className="text-3xl font-bold text-blue-600">DevPilot 2026</h1>
+            <div className="flex gap-8 text-lg">
+              <Link to="/projects" className="hover:text-blue-600">Projects</Link>
+              <Link to="/ai-review" className="hover:text-blue-600">AI Review</Link>
             </div>
-          ) : (
-            <Link to="/" className="bg-blue-600 text-white px-6 py-2 rounded">Login</Link>
-          )}
-        </nav>
+            {isLoggedIn ? (
+              <div className="flex items-center gap-4">
+                <span className="text-gray-700">Hello, {currentUser.username}</span>
+                <button
+                  onClick={handleLogout}
+                  className="bg-red-500 hover:bg-red-600 text-white px-5 py-2 rounded"
+                >
+                  Logout
+                </button>
+              </div>
+            ) : (
+              <Link to="/" className="bg-blue-600 text-white px-6 py-2 rounded">Login</Link>
+            )}
+          </nav>
 
-        <Routes>
-          <Route path="/" element={
-            isLoggedIn
-              ? <Navigate to="/projects" />
-              : <LoginForm onSuccess={fetchCurrentUser} redirectTo="/projects" />
-          } />
-          <Route path="/projects" element={
-            isLoggedIn ? (
-              <Suspense fallback={<div className="p-20 text-center text-xl">Loading Projects App...</div>}>
-                <ApolloProvider client={client}>
+          <Routes>
+            <Route path="/" element={
+              isLoggedIn
+                ? <Navigate to="/projects" />
+                : <LoginForm onSuccess={fetchCurrentUser} redirectTo="/projects" />
+            } />
+            <Route path="/projects" element={
+              isLoggedIn ? (
+                <Suspense fallback={<div className="p-20 text-center text-xl">Loading Projects App...</div>}>
                   <ProjectsApp />
-                </ApolloProvider>
-              </Suspense>
-            ) : <Navigate to="/" />
-          } />
-          <Route path="/ai-review" element={
-            isLoggedIn ? (
-              <Suspense fallback={<div className="p-20 text-center text-xl">Loading AI Review...</div>}>
-                <ApolloProvider client={client}>
+                </Suspense>
+              ) : <Navigate to="/" />
+            } />
+            <Route path="/ai-review" element={
+              isLoggedIn ? (
+                <Suspense fallback={<div className="p-20 text-center text-xl">Loading AI Review...</div>}>
                   <AIReviewApp />
-                </ApolloProvider>
-              </Suspense>
-            ) : <Navigate to="/" />
-          } />
-        </Routes>
-      </div>
-    </Router>
+                </Suspense>
+              ) : <Navigate to="/" />
+            } />
+          </Routes>
+        </div>
+      </Router>
+    </ApolloProvider>
   );
 }

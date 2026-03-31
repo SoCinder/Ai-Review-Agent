@@ -7,7 +7,11 @@ const resolvers = {
   },
 
   Query: {
-    currentUser: (_, __, { user }) => user || null
+    currentUser: async (_, __, { user }) => {
+      if (!user?.id) return null;
+      const freshUser = await User.findById(user.id).select('-password');
+      return freshUser ? { id: freshUser._id.toString(), username: freshUser.username, email: freshUser.email, role: freshUser.role } : null;
+    }
   },
 
   Mutation: {

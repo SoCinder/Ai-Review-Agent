@@ -4,7 +4,6 @@ const { expressMiddleware } = require('@as-integrations/express5');
 const express = require('express');
 const http = require('http');
 const cors = require('cors');
-const { json } = require('body-parser');
 const session = require('express-session');
 const { MongoStore } = require('connect-mongo');
 const mongoose = require('mongoose');
@@ -26,7 +25,6 @@ async function startApolloServer() {
       store: MongoStore.create({
         mongoUrl: process.env.MONGO_URI,
         collectionName: 'sessions',
-        stringify: false,
       }),
       cookie: {
         httpOnly: true,
@@ -52,7 +50,7 @@ async function startApolloServer() {
       origin: true,
       credentials: true
     }),
-    json(),
+    express.json(),
     expressMiddleware(server, {
       context: ({ req, res }) => ({
         req,
