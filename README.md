@@ -124,3 +124,12 @@ The application uses **server-side session-based authentication** with HTTP-only
 - **Enhanced User Profiles:** User settings, avatar uploads, notification preferences
 - **Role-Based Access Control:** Differentiated permissions for developers, reviewers, and project owners
 - **Deployment:** Containerized deployment with Docker and CI/CD pipeline
+
+## Emerging Technologies Lab Assignment 3 Contribution
+Group 5 - DevPilot 2026
+
+Team Member Name                 Contribution
+Jan Fontanilla - 301380907       Part B - Projects Foundation
+Umer Haider - 301350936          Setup the frontend and backend architecture
+Tien Minh Dang  -301411970       Polishing part A and C based on QA feedback
+Holly Edwards-Kiss - 301249567   Recorded demo video
