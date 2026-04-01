@@ -129,7 +129,7 @@ The application uses **server-side session-based authentication** with HTTP-only
 Group 5 - DevPilot 2026
 
 Team Member Name                 Contribution
-Jan Fontanilla - 301380907       Part B - Projects Foundation
-Umer Haider - 301350936          Setup the frontend and backend architecture
-Tien Minh Dang  -301411970       Polishing part A and C based on QA feedback
-Holly Edwards-Kiss - 301249567   Recorded demo video
+- Jan Fontanilla - 301380907       Part B - Projects Foundation
+- Umer Haider - 301350936          Setup the frontend and backend architecture
+- Tien Minh Dang  -301411970       Polishing part A and C based on QA feedback
+- Holly Edwards-Kiss - 301249567   Recorded demo video
