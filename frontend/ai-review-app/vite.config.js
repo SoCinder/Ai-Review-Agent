@@ -10,6 +10,9 @@ export default defineConfig({
     federation({
       name: 'aiReview',
       filename: 'remoteEntry.js',
+      dynamicRemoteTypeHints: false,
+      dts: false,
+      dynamicTypeHints: false,
       exposes: { './App': './src/App.jsx' },
       shared: {
         react: { singleton: true, eager: true },
