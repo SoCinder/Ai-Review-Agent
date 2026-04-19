@@ -31,67 +31,92 @@ export default function App() {
   }
 
   return (
-    <div style={{ padding: '32px', maxWidth: '1100px', margin: '0 auto' }}>
-      <h1 style={{ fontSize: '28px', fontWeight: 'bold', marginBottom: '24px', color: '#111' }}>My Projects</h1>
+    <div className="w-full min-h-screen px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mx-auto w-full max-w-5xl">
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold text-slate-900 mb-2">My Projects</h1>
+          <p className="text-slate-500">Create and manage your development projects</p>
+        </div>
 
       {queryError && (
-        <div style={{ background: '#fef2f2', border: '1px solid #fecaca', color: '#b91c1c', padding: '12px 16px', borderRadius: '8px', marginBottom: '16px', fontSize: '14px' }}>
-          Query error: {queryError.message}
+        <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6 rounded-r-lg">
+          <p className="text-red-800 font-medium text-sm">Query Error</p>
+          <p className="text-red-700 text-sm mt-1">{queryError.message}</p>
         </div>
       )}
 
       {error && (
-        <div style={{ background: '#fef2f2', border: '1px solid #fecaca', color: '#b91c1c', padding: '12px 16px', borderRadius: '8px', marginBottom: '16px', fontSize: '14px' }}>
-          {error}
+        <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6 rounded-r-lg">
+          <p className="text-red-800 font-medium text-sm">{error}</p>
         </div>
       )}
 
-      <div style={{ background: '#fff', padding: '24px', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.12)', marginBottom: '32px', border: '1px solid #e5e7eb' }}>
-        <h2 style={{ fontSize: '20px', marginBottom: '16px', color: '#333' }}>Create New Project</h2>
-        <input
-          placeholder="Project Title"
-          value={title}
-          onChange={e => setTitle(e.target.value)}
-          style={{ border: '1px solid #d1d5db', padding: '12px', width: '100%', marginBottom: '12px', borderRadius: '8px', fontSize: '16px', boxSizing: 'border-box' }}
-        />
-        <textarea
-          placeholder="Description"
-          value={desc}
-          onChange={e => setDesc(e.target.value)}
-          style={{ border: '1px solid #d1d5db', padding: '12px', width: '100%', height: '80px', marginBottom: '12px', borderRadius: '8px', fontSize: '16px', boxSizing: 'border-box' }}
-        />
-        <button
-          onClick={handleCreate}
-          style={{ background: '#16a34a', color: '#fff', padding: '12px 32px', borderRadius: '8px', border: 'none', fontSize: '16px', fontWeight: '600', cursor: 'pointer' }}
-        >
-          Create Project
-        </button>
+      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-8 mb-12">
+        <h2 className="text-2xl font-semibold text-slate-900 mb-6">Create New Project</h2>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2">Project Title</label>
+            <input
+              placeholder="Enter project title..."
+              value={title}
+              onChange={e => setTitle(e.target.value)}
+              className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-900 placeholder-slate-400"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2">Description</label>
+            <textarea
+              placeholder="Describe your project..."
+              value={desc}
+              onChange={e => setDesc(e.target.value)}
+              className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-900 placeholder-slate-400 resize-none"
+              rows={4}
+            />
+          </div>
+          <button
+            onClick={handleCreate}
+            className="inline-flex w-auto bg-blue-600 hover:bg-blue-700 text-white py-3 px-6 rounded-lg font-semibold transition-colors duration-200 items-center justify-center"
+          >
+            Create Project
+          </button>
+        </div>
       </div>
 
-      {loading ? <p>Loading...</p> : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
-          {(!data?.projectsByUser || data.projectsByUser.length === 0) && (
-            <p style={{ color: '#6b7280' }}>No projects yet. Create one above!</p>
-          )}
-          {data?.projectsByUser?.map(p => (
-            <div
-              key={p.id}
-              onClick={() => setSelectedProjectId(p.id)}
-              style={{
-                background: '#fff', padding: '24px', borderRadius: '12px',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.12)', cursor: 'pointer',
-                border: '1px solid #e5e7eb', transition: 'box-shadow 0.2s'
-              }}
-              onMouseEnter={e => e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)'}
-              onMouseLeave={e => e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.12)'}
-            >
-              <h3 style={{ fontWeight: 'bold', fontSize: '18px', color: '#111', marginBottom: '8px' }}>{p.title}</h3>
-              <p style={{ color: '#6b7280', fontSize: '14px' }}>{p.description}</p>
-              <p style={{ color: '#3b82f6', fontSize: '13px', marginTop: '12px' }}>Click to view details →</p>
-            </div>
+      {loading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[1, 2, 3].map(i => (
+            <div key={i} className="bg-slate-200 rounded-lg h-48 animate-pulse"></div>
           ))}
         </div>
+      ) : (
+        <div>
+          {(!data?.projectsByUser || data.projectsByUser.length === 0) && (
+            <div className="text-center py-12 bg-slate-50 rounded-lg border-2 border-dashed border-slate-300">
+              <p className="text-slate-500 text-lg font-medium">No projects yet</p>
+              <p className="text-slate-400 mt-1">Create your first project above to get started</p>
+            </div>
+          )}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {data?.projectsByUser?.map(p => (
+              <div
+                key={p.id}
+                onClick={() => setSelectedProjectId(p.id)}
+                className="bg-white border border-slate-200 rounded-lg overflow-hidden hover:shadow-lg hover:border-blue-300 transition-all duration-300 cursor-pointer group"
+              >
+                <div className="p-6">
+                  <h3 className="font-bold text-lg text-slate-900 mb-3 group-hover:text-blue-600 transition-colors line-clamp-2">{p.title}</h3>
+                  <p className="text-slate-600 text-sm mb-4 line-clamp-3">{p.description || 'No description'}</p>
+                  <div className="flex items-center text-blue-600 text-sm font-medium group-hover:gap-2 transition-all">
+                    <span>View Details</span>
+                    <span className="group-hover:translate-x-1 transition-transform">→</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       )}
+      </div>
     </div>
   );
 }

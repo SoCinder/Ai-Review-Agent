@@ -59,59 +59,96 @@ export default function LoginForm({ onSuccess, redirectTo }) {
   const loading = loginLoading || registerLoading;
 
   return (
-    <div className="max-w-md mx-auto mt-20 p-8 bg-white rounded-2xl shadow-xl">
-      <h2 className="text-3xl font-bold mb-8 text-center text-gray-800">
-        {isLogin ? 'Login to DevPilot' : 'Create Account'}
-      </h2>
+    <div className="min-h-[calc(100vh-80px)] bg-gradient-to-b from-slate-50 to-slate-100 flex items-center justify-center px-4">
+      <div className="w-full max-w-md">
+        <div className="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
+          {/* Header */}
+          <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-8 text-center">
+            <h2 className="text-3xl font-bold text-white mb-2">
+              {isLogin ? 'Welcome Back' : 'Join DevPilot'}
+            </h2>
+            <p className="text-blue-100 text-sm">
+              {isLogin ? 'Sign in to your account' : 'Create a new account'}
+            </p>
+          </div>
 
-      {error && <p className="text-red-600 text-center mb-4">{error}</p>}
+          {/* Form */}
+          <div className="px-8 py-8">
+            {error && (
+              <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6 rounded-r-lg">
+                <p className="text-red-800 font-medium text-sm">{error}</p>
+              </div>
+            )}
 
-      <div className="space-y-5">
-        <input
-          type="text"
-          placeholder="Username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          className="w-full p-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
+            <div className="space-y-5 mb-6">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Username</label>
+                <input
+                  type="text"
+                  placeholder="Enter your username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-900 placeholder-slate-400"
+                />
+              </div>
 
-        {!isLogin && (
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full p-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        )}
+              {!isLogin && (
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Email</label>
+                  <input
+                    type="email"
+                    placeholder="Enter your email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-900 placeholder-slate-400"
+                  />
+                </div>
+              )}
 
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="w-full p-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Password</label>
+                <input
+                  type="password"
+                  placeholder="Enter your password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-900 placeholder-slate-400"
+                />
+              </div>
 
-        <button
-          type="button"
-          onClick={handleSubmit}
-          disabled={loading}
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 rounded-xl transition disabled:opacity-50"
-        >
-          {loading ? 'Processing...' : isLogin ? 'Login' : 'Register'}
-        </button>
+              <button
+                type="button"
+                onClick={handleSubmit}
+                disabled={loading}
+                className="inline-flex w-auto bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 items-center justify-center gap-2"
+              >
+                {loading ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-blue-100 border-t-white rounded-full animate-spin"></div>
+                    Processing...
+                  </>
+                ) : (
+                  isLogin ? 'Sign In' : 'Create Account'
+                )}
+              </button>
+            </div>
+
+            {/* Toggle */}
+            <div className="text-center pt-6 border-t border-slate-200">
+              <p className="text-slate-600 text-sm mb-3">
+                {isLogin ? "Don't have an account?" : 'Already have an account?'}
+              </p>
+              <button
+                type="button"
+                onClick={() => setIsLogin(!isLogin)}
+                className="text-blue-600 hover:text-blue-700 font-semibold text-sm transition-colors"
+              >
+                {isLogin ? 'Create one now' : 'Sign in instead'}
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
-
-      <button
-        type="button"
-        onClick={() => setIsLogin(!isLogin)}
-        className="text-blue-600 mt-6 block mx-auto hover:underline"
-      >
-        {isLogin
-          ? "Don't have an account? Register"
-          : 'Already have an account? Login'}
-      </button>
     </div>
   );
 }

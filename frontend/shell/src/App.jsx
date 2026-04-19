@@ -46,7 +46,14 @@ export default function App() {
   };
 
   if (loading) {
-    return <div className="p-20 text-center text-xl">Loading DevPilot...</div>;
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-slate-600 font-medium">Loading DevPilot...</p>
+        </div>
+      </div>
+    );
   }
 
   const isLoggedIn = !!currentUser;
@@ -54,49 +61,77 @@ export default function App() {
   return (
     <ApolloProvider client={client}>
       <Router>
-        <div className="min-h-screen bg-gray-50">
-          <nav className="bg-white shadow p-4 flex justify-between items-center">
-            <h1 className="text-3xl font-bold text-blue-600">DevPilot 2026</h1>
-            <div className="flex gap-8 text-lg">
-              <Link to="/projects" className="hover:text-blue-600">Projects</Link>
-              <Link to="/ai-review" className="hover:text-blue-600">AI Review</Link>
-            </div>
-            {isLoggedIn ? (
-              <div className="flex items-center gap-4">
-                <span className="text-gray-700">Hello, {currentUser.username}</span>
-                <button
-                  onClick={handleLogout}
-                  className="bg-red-500 hover:bg-red-600 text-white px-5 py-2 rounded"
-                >
-                  Logout
-                </button>
+        <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100">
+          <nav className="bg-white shadow-md border-b border-slate-200">
+            <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg flex items-center justify-center">
+                  <span className="text-white font-bold text-lg">D</span>
+                </div>
+                <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent">DevPilot 2026</h1>
               </div>
-            ) : (
-              <Link to="/" className="bg-blue-600 text-white px-6 py-2 rounded">Login</Link>
-            )}
+              <div className="flex items-center gap-8">
+                <div className="flex gap-6 text-sm font-medium">
+                  <Link to="/projects" className="text-slate-600 hover:text-blue-600 transition-colors py-2 border-b-2 border-transparent hover:border-blue-600">Projects</Link>
+                  <Link to="/ai-review" className="text-slate-600 hover:text-blue-600 transition-colors py-2 border-b-2 border-transparent hover:border-blue-600">AI Review</Link>
+                </div>
+                {isLoggedIn ? (
+                  <div className="flex items-center gap-4 pl-6 border-l border-slate-200">
+                    <div className="flex flex-col items-end">
+                      <span className="text-sm font-medium text-slate-900">Welcome</span>
+                      <span className="text-xs text-slate-500">{currentUser.username}</span>
+                    </div>
+                    <button
+                      onClick={handleLogout}
+                      className="bg-red-50 hover:bg-red-100 text-red-600 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                ) : (
+                  <Link to="/" className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg text-sm font-medium transition-colors">Login</Link>
+                )}
+              </div>
+            </div>
           </nav>
 
-          <Routes>
-            <Route path="/" element={
-              isLoggedIn
-                ? <Navigate to="/projects" />
-                : <LoginForm onSuccess={fetchCurrentUser} redirectTo="/projects" />
-            } />
-            <Route path="/projects" element={
-              isLoggedIn ? (
-                <Suspense fallback={<div className="p-20 text-center text-xl">Loading Projects App...</div>}>
-                  <ProjectsApp />
-                </Suspense>
-              ) : <Navigate to="/" />
-            } />
-            <Route path="/ai-review" element={
-              isLoggedIn ? (
-                <Suspense fallback={<div className="p-20 text-center text-xl">Loading AI Review...</div>}>
-                  <AIReviewApp />
-                </Suspense>
-              ) : <Navigate to="/" />
-            } />
-          </Routes>
+          <div className="min-h-screen max-w-7xl mx-auto px-4 py-10 sm:px-6 lg:px-8">
+            <Routes>
+              <Route path="/" element={
+                isLoggedIn
+                  ? <Navigate to="/projects" />
+                  : <LoginForm onSuccess={fetchCurrentUser} redirectTo="/projects" />
+              } />
+              <Route path="/projects" element={
+                isLoggedIn ? (
+                  <Suspense fallback={
+                    <div className="flex items-center justify-center py-20">
+                      <div className="text-center">
+                        <div className="w-8 h-8 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
+                        <p className="text-slate-600 font-medium">Loading Projects...</p>
+                      </div>
+                    </div>
+                  }>
+                    <ProjectsApp />
+                  </Suspense>
+                ) : <Navigate to="/" />
+              } />
+              <Route path="/ai-review" element={
+                isLoggedIn ? (
+                  <Suspense fallback={
+                    <div className="flex items-center justify-center py-20">
+                      <div className="text-center">
+                        <div className="w-8 h-8 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mx-auto mb-4"></div>
+                        <p className="text-slate-600 font-medium">Loading AI Review...</p>
+                      </div>
+                    </div>
+                  }>
+                    <AIReviewApp />
+                  </Suspense>
+                ) : <Navigate to="/" />
+              } />
+            </Routes>
+          </div>
         </div>
       </Router>
     </ApolloProvider>

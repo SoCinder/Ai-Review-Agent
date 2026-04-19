@@ -50,86 +50,102 @@ export default function FeatureItem({ feature }) {
     setDraftVersion('');
   };
 
-  const inputStyle = {
-    border: '1px solid #d1d5db', padding: '10px', width: '100%',
-    borderRadius: '8px', fontSize: '14px', marginBottom: '8px', boxSizing: 'border-box'
+  const getStatusColor = (status) => {
+    switch ((status || 'open').toLowerCase()) {
+      case 'completed':
+        return 'bg-green-100 text-green-700 border border-green-300';
+      case 'in-progress':
+        return 'bg-blue-100 text-blue-700 border border-blue-300';
+      case 'planned':
+        return 'bg-purple-100 text-purple-700 border border-purple-300';
+      default:
+        return 'bg-slate-100 text-slate-700 border border-slate-300';
+    }
   };
 
   return (
-    <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '20px', marginBottom: '16px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '16px' }}>
-        <div style={{ flex: 1 }}>
-          <h4 style={{ fontWeight: '600', fontSize: '17px', color: '#111', margin: 0 }}>{feature.title}</h4>
-          <p style={{ color: '#6b7280', marginTop: '4px', fontSize: '14px' }}>{feature.description}</p>
-        </div>
-        <span style={{
-          fontSize: '12px', fontWeight: '500', padding: '4px 10px',
-          borderRadius: '999px', background: '#dbeafe', color: '#1d4ed8', whiteSpace: 'nowrap'
-        }}>
-          {feature.status || 'open'}
-        </span>
-      </div>
-
-      <button
-        type="button"
-        onClick={() => setExpanded(!expanded)}
-        style={{ marginTop: '16px', fontSize: '14px', color: '#3b82f6', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
-      >
-        {expanded ? '▾ Hide Drafts' : '▸ Show Drafts'}
-      </button>
-
-      {expanded && (
-        <div style={{ marginTop: '16px' }}>
-          <div>
-            <h5 style={{ fontWeight: '500', color: '#333', marginBottom: '8px', fontSize: '15px' }}>Draft History</h5>
-            {loading ? (
-              <p style={{ fontSize: '14px', color: '#6b7280' }}>Loading drafts...</p>
-            ) : data?.draftsByFeature?.length === 0 ? (
-              <p style={{ fontSize: '14px', color: '#6b7280' }}>No drafts yet. Submit one below!</p>
-            ) : (
-              <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                {data?.draftsByFeature?.map(draft => (
-                  <li key={draft.id} style={{ background: '#f9fafb', borderRadius: '8px', padding: '12px', marginBottom: '8px', fontSize: '14px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                      <span style={{ fontWeight: '500', color: '#374151' }}>v{draft.version}</span>
-                      <span style={{ color: '#9ca3af', fontSize: '12px' }}>
-                        {new Date(Number(draft.createdAt)).toLocaleDateString()}
-                      </span>
-                    </div>
-                    <p style={{ color: '#4b5563', whiteSpace: 'pre-wrap', margin: 0 }}>{draft.content}</p>
-                  </li>
-                ))}
-              </ul>
-            )}
+    <div className="bg-white border border-slate-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow">
+      <div className="p-6">
+        <div className="flex justify-between items-start gap-4 mb-4">
+          <div className="flex-1">
+            <h4 className="font-semibold text-lg text-slate-900 mb-2">{feature.title}</h4>
+            <p className="text-slate-600 text-sm">{feature.description}</p>
           </div>
+          <span className={`text-xs font-semibold px-3 py-1 rounded-full whitespace-nowrap ${getStatusColor(feature.status)}`}>
+            {(feature.status || 'open').charAt(0).toUpperCase() + (feature.status || 'open').slice(1)}
+          </span>
+        </div>
 
-          <div style={{ borderTop: '1px solid #e5e7eb', paddingTop: '16px', marginTop: '16px' }}>
-            <h5 style={{ fontWeight: '500', color: '#333', marginBottom: '8px', fontSize: '15px' }}>Submit Draft</h5>
-            <textarea
-              placeholder="Draft content — describe your implementation details or notes"
-              value={draftContent}
-              onChange={e => setDraftContent(e.target.value)}
-              style={{ ...inputStyle, height: '80px' }}
-            />
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <input
-                type="number"
-                placeholder="Version (optional)"
-                value={draftVersion}
-                onChange={e => setDraftVersion(e.target.value)}
-                style={{ ...inputStyle, width: '160px', marginBottom: 0 }}
-              />
-              <button
-                type="button"
-                onClick={handleSubmitDraft}
-                style={{ background: '#2563eb', color: '#fff', padding: '10px 20px', borderRadius: '8px', border: 'none', fontSize: '14px', fontWeight: '600', cursor: 'pointer', whiteSpace: 'nowrap' }}
-              >
-                Submit Draft
-              </button>
+        <button
+          type="button"
+          onClick={() => setExpanded(!expanded)}
+          className="text-blue-600 hover:text-blue-700 font-medium text-sm flex items-center gap-2 transition-colors py-2">
+          {expanded ? '▼' : '▶'} {expanded ? 'Hide Drafts' : 'Show Drafts'}
+        </button>
+
+        {expanded && (
+          <div className="mt-6 pt-6 border-t border-slate-200 space-y-6">
+            <div>
+              <h5 className="font-semibold text-slate-900 mb-4">Draft History</h5>
+              {loading ? (
+                <div className="space-y-2">
+                  {[1, 2].map(i => (
+                    <div key={i} className="bg-slate-100 rounded h-12 animate-pulse"></div>
+                  ))}
+                </div>
+              ) : data?.draftsByFeature?.length === 0 ? (
+                <p className="text-slate-500 text-sm">No drafts submitted yet</p>
+              ) : (
+                <ul className="space-y-3">
+                  {data?.draftsByFeature?.map(draft => (
+                    <li key={draft.id} className="bg-slate-50 rounded-lg p-4 border border-slate-200">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="font-medium text-slate-900 text-sm">Version {draft.version}</span>
+                        <span className="text-slate-500 text-xs">
+                          {new Date(Number(draft.createdAt)).toLocaleDateString()}
+                        </span>
+                      </div>
+                      <p className="text-slate-700 text-sm whitespace-pre-wrap line-clamp-3">{draft.content}</p>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+
+            <div className="border-t border-slate-200 pt-6">
+              <h5 className="font-semibold text-slate-900 mb-4">Submit Draft</h5>
+              <div className="space-y-4">
+                <textarea
+                  placeholder="Describe your implementation details..."
+                  value={draftContent}
+                  onChange={e => setDraftContent(e.target.value)}
+                  className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-900 placeholder-slate-400 resize-none"
+                  rows={3}
+                />
+                <div className="flex items-end gap-3">
+                  <div className="flex-1">
+                    <label className="block text-xs font-medium text-slate-700 mb-2">Version (Optional)</label>
+                    <input
+                      type="number"
+                      placeholder="1"
+                      value={draftVersion}
+                      onChange={e => setDraftVersion(e.target.value)}
+                      className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-900 placeholder-slate-400 text-sm"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleSubmitDraft}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg text-sm font-semibold transition-colors duration-200 whitespace-nowrap"
+                  >
+                    Submit Draft
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

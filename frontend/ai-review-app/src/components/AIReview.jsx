@@ -98,201 +98,118 @@ export default function AIReview() {
   };
 
   return (
-    <div className="p-8 max-w-6xl mx-auto">
-      <h1 className="text-4xl font-bold text-purple-600 mb-8">AI Code Review</h1>
+    <div className="min-h-screen bg-slate-50 py-10">
+      <div className="p-8 max-w-7xl mx-auto">
+        <div className="mb-8">
+        <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-purple-700 bg-clip-text text-transparent mb-2">
+          AI-Powered Code Review
+        </h1>
+        <p className="text-slate-600 text-lg">Agentic RAG system for grounded code reviews with citations and evidence</p>
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <section className="bg-white p-6 rounded-lg shadow-lg">
-          <h2 className="text-xl font-semibold mb-4">Submit draft for review</h2>
-          <form onSubmit={handleSubmit}>
-            <label className="block text-sm font-medium mb-1" htmlFor="draftId">
-              Draft ID (optional)
-            </label>
-            <input
-              id="draftId"
-              value={draftId}
-              onChange={(e) => setDraftId(e.target.value)}
-              placeholder="e.g. PR-42"
-              className="w-full p-2 mb-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-            />
-
-            <label className="block text-sm font-medium mb-1" htmlFor="draftText">
-              Draft code
-            </label>
-            <textarea
-              id="draftText"
-              value={draftText}
-              onChange={(e) => setDraftText(e.target.value)}
-              rows={16}
-              placeholder="Paste code to review..."
-              className="w-full p-3 border rounded-lg font-mono text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-            />
-
-            {error && (
-              <div className="mt-3 text-red-600 font-medium">{error}</div>
-            )}
-
-            <button
-              type="submit"
-              disabled={loading || !draftText.trim()}
-              className="mt-4 w-full bg-purple-600 text-white py-3 rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              {loading ? 'Reviewing...' : 'Run AI Review'}
-            </button>
+        <section className="bg-white border border-slate-200 rounded-xl shadow-sm flex flex-col lg:min-h-[620px]">
+          <div className="bg-gradient-to-r from-purple-600 to-purple-700 px-6 py-4">
+            <h2 className="text-lg font-semibold text-white">Submit Code for Review</h2>
+          </div>
+          <form onSubmit={handleSubmit} className="p-6 flex h-full flex-col">
+            <div className="flex-1 overflow-y-auto pr-2 space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2" htmlFor="draftId">Draft ID <span className="text-slate-400">(optional)</span></label>
+                <input id="draftId" value={draftId} onChange={(e) => setDraftId(e.target.value)} placeholder="e.g., PR-42" className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-slate-900 placeholder-slate-400"/>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2" htmlFor="draftText">Code to Review</label>
+                <textarea id="draftText" value={draftText} onChange={(e) => setDraftText(e.target.value)} rows={12} placeholder="Paste your code here..." className="w-full min-h-[320px] px-4 py-3 border border-slate-300 rounded-lg font-mono text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 text-slate-900 placeholder-slate-400 resize-none"/>
+              </div>
+              {error && <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg"><p className="text-red-800 font-medium text-sm">{error}</p></div>}
+            </div>
+            <div className="mt-4 pt-4 border-t border-slate-200">
+              <p className="text-slate-500 text-sm mb-3">Ready to run the review? Submit the code above to generate findings, citations, and confidence scores.</p>
+              <button type="submit" disabled={loading || !draftText.trim()} className="w-full bg-purple-600 hover:bg-purple-700 disabled:bg-purple-400 text-white font-semibold py-4 rounded-2xl transition-colors duration-200 shadow-lg shadow-purple-100/50 flex items-center justify-center gap-3 text-sm md:text-base">
+                {loading ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-purple-100 border-t-white rounded-full animate-spin"></div>
+                    Running Review...
+                  </>
+                ) : (
+                  'Submit for Review'
+                )}
+              </button>
+            </div>
           </form>
         </section>
 
-        <section className="bg-white p-6 rounded-lg shadow-lg">
-          <h2 className="text-xl font-semibold mb-4">Grounded review result</h2>
-          {!error && !result && !loading && (
-            <p className="text-gray-500">
-              Submit a draft to see the summary, issues, suggestions,
-              citations, reflection notes, and retrieved evidence.
-            </p>
-          )}
-          {loading && <p className="text-gray-500">Running agentic review...</p>}
-
-          {result && (
-            <div className="space-y-5">
-              <div className="flex flex-wrap gap-2">
-                <span className="px-2 py-1 text-xs rounded bg-purple-100 text-purple-700 border border-purple-300">
-                  Initial: {result.initialConfidence}%
-                </span>
-                <span className="px-2 py-1 text-xs rounded bg-purple-600 text-white">
-                  Final: {result.finalConfidence}%
-                </span>
-                <span className="px-2 py-1 text-xs rounded bg-gray-100 text-gray-700 border">
-                  Sources used: {citations.length}
-                </span>
-                <span className="px-2 py-1 text-xs rounded bg-gray-100 text-gray-700 border">
-                  Retrieved chunks: {retrievedChunks.length}
-                </span>
-                <span className="px-2 py-1 text-xs rounded bg-gray-100 text-gray-700 border">
-                  Evidence: {result.evidenceStatus || 'n/a'}
-                </span>
+        <section className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden flex flex-col">
+          <div className="bg-gradient-to-r from-purple-600 to-purple-700 px-6 py-4">
+            <h2 className="text-lg font-semibold text-white">Review Results</h2>
+          </div>
+          <div className="p-6 flex-1 overflow-y-auto">
+            {!error && !result && !loading && (
+              <div className="text-center py-8">
+                
+                <p className="text-slate-600 font-medium">Submit code to see results</p>
               </div>
-
-              <div>
-                <h3 className="font-semibold text-purple-600 mb-1">Summary</h3>
-                <p className="text-gray-800 whitespace-pre-wrap">
-                  {result.summary}
-                </p>
+            )}
+            {loading && (
+              <div className="flex flex-col items-center justify-center py-12">
+                <div className="w-8 h-8 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mb-4"></div>
+                <p className="text-slate-600 font-medium">Running review...</p>
               </div>
-
-              <div>
-                <h3 className="font-semibold text-purple-600 mb-2">Issues</h3>
-                {issues.length === 0 ? (
-                  <p className="text-gray-500">No issues reported.</p>
-                ) : (
-                  <table className="w-full text-sm border">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="text-left p-2 border-b">Severity</th>
-                        <th className="text-left p-2 border-b">Type</th>
-                        <th className="text-left p-2 border-b">Description</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {issues.map((issue, i) => (
-                        <tr key={i} className="border-b">
-                          <td className="p-2 align-top">
-                            <span
-                              className={`px-2 py-0.5 text-xs rounded ${severityClass(issue.severity)}`}
-                            >
-                              {issue.severity || 'unknown'}
-                            </span>
-                          </td>
-                          <td className="p-2 align-top">{issue.type}</td>
-                          <td className="p-2 align-top">{issue.description}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                )}
-              </div>
-
-              <div>
-                <h3 className="font-semibold text-purple-600 mb-1">
-                  Suggestions
-                </h3>
-                {suggestions.length === 0 ? (
-                  <p className="text-gray-500">No suggestions returned.</p>
-                ) : (
-                  <ul className="list-disc pl-5 space-y-1 text-gray-800">
-                    {suggestions.map((s, i) => (
-                      <li key={i}>{s}</li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-
-              <div>
-                <h3 className="font-semibold text-purple-600 mb-1">Citations</h3>
-                {citations.length === 0 ? (
-                  <p className="text-gray-500">No citations returned.</p>
-                ) : (
-                  <ul className="list-disc pl-5 space-y-1 text-gray-800">
-                    {citations.map((c, i) => (
-                      <li key={`${c}-${i}`}>
-                        <code className="text-xs bg-gray-100 px-1 rounded">
-                          {c}
-                        </code>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-
-              <div>
-                <h3 className="font-semibold text-purple-600 mb-1">
-                  Reflection notes
-                </h3>
-                {reflectionNotes.length === 0 ? (
-                  <p className="text-gray-500">
-                    No reflection notes were returned.
-                  </p>
-                ) : (
-                  <ul className="list-disc pl-5 space-y-1 text-gray-800">
-                    {reflectionNotes.map((note, i) => (
-                      <li key={`${note}-${i}`}>{note}</li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-
-              <div>
-                <h3 className="font-semibold text-purple-600 mb-1">
-                  Retrieved evidence
-                </h3>
-                {retrievedChunks.length === 0 ? (
-                  <p className="text-gray-500">
-                    No retrieved evidence was returned.
-                  </p>
-                ) : (
-                  <div className="space-y-2">
-                    {retrievedChunks.map((doc, i) => (
-                      <div
-                        key={doc?.sourceId || `chunk-${i}`}
-                        className="p-3 rounded border bg-gray-50"
-                      >
-                        <p className="text-sm font-medium">
-                          <code className="text-xs bg-white px-1 rounded border">
-                            {doc?.sourceId || 'Unknown ID'}
-                          </code>{' '}
-                          — {doc?.title || doc?.source || 'Untitled source'}
-                        </p>
-                        <p className="text-xs text-gray-600 mt-1 whitespace-pre-wrap">
-                          {doc?.content || 'No content.'}
-                        </p>
-                      </div>
-                    ))}
+            )}
+            {result && (
+              <div className="space-y-6">
+                <div className="flex flex-wrap gap-2 pb-4 border-b border-slate-200">
+                  <div className="px-3 py-2 text-xs font-semibold rounded-lg bg-purple-50 text-purple-700 border border-purple-200">Initial: {result.initialConfidence}%</div>
+                  <div className="px-3 py-2 text-xs font-semibold rounded-lg bg-purple-600 text-white">Final: {result.finalConfidence}%</div>
+                  <div className="px-3 py-2 text-xs font-semibold rounded-lg bg-slate-100 text-slate-700 border border-slate-200">📚 {citations.length} sources</div>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-purple-600 text-sm mb-3">Summary</h3>
+                  <p className="text-slate-700 text-sm whitespace-pre-wrap">{result.summary}</p>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-purple-600 text-sm mb-3">Issues ({issues.length})</h3>
+                  {issues.length === 0 ? <p className="text-slate-500 text-sm">✓ No issues found</p> : (
+                    <div className="space-y-2">{issues.map((issue, i) => (<div key={i} className="border border-slate-200 rounded-lg p-3 bg-slate-50"><div className="flex items-start gap-3"><span className={`text-xs font-semibold px-2 py-1 rounded ${severityClass(issue.severity)}`}>{issue.severity || 'unknown'}</span><div className="flex-1"><p className="font-medium text-slate-900 text-sm">{issue.type}</p><p className="text-slate-600 text-sm mt-1">{issue.description}</p></div></div></div>))}</div>
+                  )}
+                </div>
+                {suggestions.length > 0 && (
+                  <div>
+                    <h3 className="font-semibold text-purple-600 text-sm mb-3">Suggestions</h3>
+                    <ul className="space-y-2">{suggestions.map((s, i) => (<li key={i} className="flex gap-3 text-sm text-slate-700"><span className="text-purple-600">→</span><span>{s}</span></li>))}</ul>
                   </div>
                 )}
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </section>
       </div>
+
+      {result && (
+        <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+          <section className="bg-white border border-slate-200 rounded-xl shadow-sm p-6">
+            <h3 className="font-semibold text-purple-600 text-lg mb-4">Citations ({citations.length})</h3>
+            {citations.length === 0 ? <p className="text-slate-500 text-sm">No citations returned.</p> : (
+              <ul className="space-y-2">{citations.map((c, i) => (<li key={`${c}-${i}`} className="flex items-center gap-2 text-sm"><span className="text-purple-600">•</span><code className="text-xs bg-slate-100 px-2 py-1 rounded border border-slate-200 text-slate-700 font-mono">{c}</code></li>))}</ul>
+            )}
+          </section>
+          <section className="bg-white border border-slate-200 rounded-xl shadow-sm p-6">
+            <h3 className="font-semibold text-purple-600 text-lg mb-4">Reflection Notes</h3>
+            {reflectionNotes.length === 0 ? <p className="text-slate-500 text-sm">No reflection notes.</p> : (
+              <ul className="space-y-2">{reflectionNotes.map((note, i) => (<li key={`${note}-${i}`} className="flex gap-3 text-sm text-slate-700"><span className="text-purple-600">💭</span><span>{note}</span></li>))}</ul>
+            )}
+          </section>
+        </div>
+      )}
+
+      {result && retrievedChunks.length > 0 && (
+        <section className="mt-8 bg-white border border-slate-200 rounded-xl shadow-sm p-6">
+          <h3 className="font-semibold text-purple-600 text-lg mb-4">Retrieved Evidence ({retrievedChunks.length})</h3>
+          <div className="space-y-3">{retrievedChunks.map((doc, i) => (<div key={doc?.sourceId || `chunk-${i}`} className="border border-slate-200 rounded-lg p-4 bg-slate-50 hover:bg-slate-100"><p className="text-sm font-medium text-slate-900 mb-2"><code className="text-xs bg-white px-2 py-1 rounded border border-slate-300 font-mono text-purple-600">{doc?.sourceId || 'Unknown'}</code><span className="ml-2">{doc?.title || doc?.source}</span></p><p className="text-xs text-slate-600 whitespace-pre-wrap font-mono">{doc?.content}</p></div>))}</div>
+        </section>
+      )}
     </div>
+  </div>
   );
 }

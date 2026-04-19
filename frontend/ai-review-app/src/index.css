@@ -56,7 +56,9 @@ body {
   margin: 0;
 }
 
-#root {
+/* #root removed: avoid styling global #root in federated build; use .ai-root instead */
+
+.ai-root {
   width: 1126px;
   max-width: 100%;
   margin: 0 auto;

@@ -62,56 +62,72 @@ export default function ProjectDetail({ projectId, onBack }) {
   };
 
   return (
-    <div style={{ padding: '32px', maxWidth: '900px', margin: '0 auto' }}>
+    <div className="p-8 max-w-4xl mx-auto">
       <button
         type="button"
         onClick={onBack}
-        style={{ marginBottom: '24px', color: '#3b82f6', background: 'none', border: 'none', cursor: 'pointer', fontSize: '14px' }}
+        className="mb-6 text-blue-600 hover:text-blue-700 font-medium text-sm flex items-center gap-2 transition-colors"
       >
         ← Back to Projects
       </button>
 
       {projectLoading ? (
-        <p style={{ color: '#6b7280' }}>Loading project...</p>
+        <div className="bg-slate-100 animate-pulse rounded-lg h-32"></div>
       ) : (
-        <div style={{ marginBottom: '32px' }}>
-          <h1 style={{ fontSize: '28px', fontWeight: 'bold', color: '#111' }}>{projectData?.project?.title}</h1>
-          <p style={{ color: '#6b7280', marginTop: '8px' }}>{projectData?.project?.description}</p>
+        <div className="mb-8 pb-6 border-b border-slate-200">
+          <h1 className="text-4xl font-bold text-slate-900 mb-2">{projectData?.project?.title}</h1>
+          <p className="text-slate-600 text-lg">{projectData?.project?.description}</p>
         </div>
       )}
 
       <div>
-        <h2 style={{ fontSize: '22px', fontWeight: '600', color: '#333', marginBottom: '16px' }}>Feature Requests</h2>
+        <h2 className="text-3xl font-bold text-slate-900 mb-6">Feature Requests</h2>
 
-        <div style={{ background: '#fff', padding: '24px', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.12)', marginBottom: '24px', border: '1px solid #e5e7eb' }}>
-          <h3 style={{ fontSize: '17px', fontWeight: '500', marginBottom: '16px', color: '#333' }}>Add Feature Request</h3>
-          <input
-            placeholder="Feature title"
-            value={featureTitle}
-            onChange={e => setFeatureTitle(e.target.value)}
-            style={inputStyle}
-          />
-          <textarea
-            placeholder="Description"
-            value={featureDesc}
-            onChange={e => setFeatureDesc(e.target.value)}
-            style={{ ...inputStyle, height: '80px' }}
-          />
-          <button
-            type="button"
-            onClick={handleAddFeature}
-            style={{ background: '#16a34a', color: '#fff', padding: '10px 24px', borderRadius: '8px', border: 'none', fontSize: '15px', fontWeight: '600', cursor: 'pointer' }}
-          >
-            Add Feature
-          </button>
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-8 mb-8">
+          <h3 className="text-xl font-semibold text-slate-900 mb-6">Add Feature Request</h3>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">Title</label>
+              <input
+                placeholder="What feature should be added?"
+                value={featureTitle}
+                onChange={e => setFeatureTitle(e.target.value)}
+                className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-900 placeholder-slate-400"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">Description</label>
+              <textarea
+                placeholder="Provide details about this feature..."
+                value={featureDesc}
+                onChange={e => setFeatureDesc(e.target.value)}
+                className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-900 placeholder-slate-400 resize-none"
+                rows={4}
+              />
+            </div>
+            <button
+              type="button"
+              onClick={handleAddFeature}
+              className="inline-flex w-auto bg-blue-600 hover:bg-blue-700 text-white py-3 px-6 rounded-lg font-semibold transition-colors duration-200 items-center justify-center"
+            >
+              Add Feature Request
+            </button>
+          </div>
         </div>
 
         {featuresLoading ? (
-          <p style={{ color: '#6b7280' }}>Loading features...</p>
+          <div className="space-y-4">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="bg-slate-200 rounded-lg h-24 animate-pulse"></div>
+            ))}
+          </div>
         ) : featuresData?.featureRequests?.length === 0 ? (
-          <p style={{ color: '#6b7280' }}>No feature requests yet. Add one above!</p>
+          <div className="text-center py-12 bg-slate-50 rounded-lg border-2 border-dashed border-slate-300">
+            <p className="text-slate-500 text-lg font-medium">No feature requests yet</p>
+            <p className="text-slate-400 mt-1">Create your first feature request above</p>
+          </div>
         ) : (
-          <div>
+          <div className="space-y-4">
             {featuresData?.featureRequests?.map(f => (
               <FeatureItem key={f.id} feature={f} />
             ))}
