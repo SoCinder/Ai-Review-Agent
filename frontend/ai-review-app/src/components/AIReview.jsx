@@ -1,164 +1,297 @@
-import { useState, useEffect } from 'react';
-import { useQuery, useMutation, gql } from '@apollo/client';
+import { useMemo, useState } from 'react';
+import { useMutation, gql } from '@apollo/client';
 import { client } from '../services/api';
 
-const GET_DOCUMENTS = gql`
-  query GetDocuments($projectId: ID!) {
-    documents(projectId: $projectId) {
+const REVIEW_DRAFT = gql`
+  mutation ReviewDraft($draftText: String!, $draftId: ID) {
+    reviewDraft(draftText: $draftText, draftId: $draftId) {
       id
-      title
-      content
-      type
-      tags
-      metadata
-    }
-  }
-`;
-
-const CREATE_REVIEW = gql`
-  mutation CreateReview($input: CreateReviewInput!) {
-    createReview(input: $input) {
-      id
-      userId
-      projectId
-      documentId
-      aiOutput
-      confidenceScore
+      draftId
+      summary
+      issues {
+        type
+        severity
+        description
+      }
+      suggestions
+      citations
+      retrievedChunks {
+        sourceId
+        source
+        title
+        content
+      }
+      initialConfidence
+      finalConfidence
+      reflectionNotes
+      evidenceStatus
       status
       createdAt
-      updatedAt
     }
   }
 `;
 
-export default function AIReview() {
-  const [selectedDocument, setSelectedDocument] = useState(null);
-  const [reviewText, setReviewText] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
+const sampleDraft = `function getUser(id) {
+  const user = db.query("SELECT * FROM users WHERE id = " + id);
+  return user;
+}`;
 
-  const { data: documentsData, loading: documentsLoading, error: documentsError } = useQuery(
-    GET_DOCUMENTS,
-    {
-      variables: { projectId: 'sample-project' },
-      client,
-    }
+function toArray(value) {
+  return Array.isArray(value) ? value : [];
+}
+
+function severityClass(severity) {
+  switch ((severity || '').toLowerCase()) {
+    case 'critical':
+      return 'bg-red-600 text-white';
+    case 'high':
+      return 'bg-red-100 text-red-700 border border-red-300';
+    case 'medium':
+      return 'bg-yellow-100 text-yellow-800 border border-yellow-300';
+    case 'low':
+      return 'bg-blue-100 text-blue-700 border border-blue-300';
+    default:
+      return 'bg-gray-100 text-gray-700 border border-gray-300';
+  }
+}
+
+export default function AIReview() {
+  const [draftText, setDraftText] = useState(sampleDraft);
+  const [draftId, setDraftId] = useState('');
+  const [result, setResult] = useState(null);
+  const [error, setError] = useState('');
+
+  const [reviewDraft, { loading }] = useMutation(REVIEW_DRAFT, { client });
+
+  const issues = useMemo(() => toArray(result?.issues), [result]);
+  const suggestions = useMemo(() => toArray(result?.suggestions), [result]);
+  const citations = useMemo(() => toArray(result?.citations), [result]);
+  const reflectionNotes = useMemo(
+    () => toArray(result?.reflectionNotes),
+    [result]
+  );
+  const retrievedChunks = useMemo(
+    () => toArray(result?.retrievedChunks),
+    [result]
   );
 
-  const [createReview] = useMutation(CREATE_REVIEW, {
-    client,
-  });
-
-  useEffect(() => {
-    // Auto-select first document if available
-    if (documentsData?.documents?.length > 0 && !selectedDocument) {
-      setSelectedDocument(documentsData.documents[0]);
-    }
-  }, [documentsData, selectedDocument]);
-
-  const handleRequestReview = async () => {
-    if (!selectedDocument || !reviewText.trim()) {
-      setError('Please select a document and provide review context');
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    const trimmed = draftText.trim();
+    if (!trimmed) {
+      setError('Please paste a code draft to review.');
       return;
     }
-
-    setIsLoading(true);
-    setError(null);
-
+    setError('');
+    setResult(null);
     try {
-      const response = await createReview({
+      const response = await reviewDraft({
         variables: {
-          input: {
-            userId: 'sample-user',
-            projectId: 'sample-project',
-            documentId: selectedDocument.id,
-            aiOutput: {
-              review: reviewText,
-              suggestions: [],
-              confidence: 0.95,
-            },
-            confidenceScore: 0.95,
-          },
+          draftText: trimmed,
+          draftId: draftId.trim() || null,
         },
       });
-
-      console.log('Review created:', response.data.createReview);
-      setReviewText('');
-      setError('Review requested successfully! The AI will process your request shortly.');
+      setResult(response.data.reviewDraft);
     } catch (err) {
-      console.error(err);
-      setError('Failed to create review: ' + (err.message || 'Unknown error'));
-    } finally {
-      setIsLoading(false);
+      setError(err?.message || 'Failed to run review.');
     }
   };
 
-  if (documentsLoading) return <div className="p-8">Loading documents...</div>;
-  if (documentsError) return <div className="p-8 text-red-600">Error loading documents: {documentsError.message}</div>;
-
   return (
-    <div className="p-8 max-w-4xl mx-auto">
+    <div className="p-8 max-w-6xl mx-auto">
       <h1 className="text-4xl font-bold text-purple-600 mb-8">AI Code Review</h1>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Document Selection */}
-        <div className="lg:col-span-1">
-          <div className="bg-white p-6 rounded-lg shadow-lg">
-            <h2 className="text-xl font-semibold mb-4">Select Document</h2>
-            <div className="space-y-2">
-              {documentsData?.documents?.map((doc) => (
-                <button
-                  key={doc.id}
-                  onClick={() => setSelectedDocument(doc)}
-                  className={`w-full p-3 text-left rounded-lg cursor-pointer transition-all ${
-                    selectedDocument?.id === doc.id
-                      ? 'bg-purple-100 text-purple-600 border border-purple-300'
-                      : 'bg-gray-100 hover:bg-gray-200'
-                  }`}
-                >
-                  <h3 className="font-medium">{doc.title}</h3>
-                  <p className="text-sm text-gray-600 mt-1">{doc.type}</p>
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Review Input */}
-        <div className="lg:col-span-2">
-          <div className="bg-white p-6 rounded-lg shadow-lg">
-            <h2 className="text-xl font-semibold mb-4">Provide Review Context</h2>
-
-            {selectedDocument && (
-              <div className="mb-4">
-                <h3 className="font-medium text-purple-600 mb-2">
-                  Selected Document: {selectedDocument.title}
-                </h3>
-                <div className="bg-gray-100 p-3 rounded text-sm text-gray-700">
-                  {selectedDocument.content.substring(0, 200)}...
-                </div>
-              </div>
-            )}
-
-            <textarea
-              value={reviewText}
-              onChange={(e) => setReviewText(e.target.value)}
-              placeholder="Provide context for the AI review (e.g., what aspects to focus on, specific concerns, etc.)"
-              className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-              rows={6}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <section className="bg-white p-6 rounded-lg shadow-lg">
+          <h2 className="text-xl font-semibold mb-4">Submit draft for review</h2>
+          <form onSubmit={handleSubmit}>
+            <label className="block text-sm font-medium mb-1" htmlFor="draftId">
+              Draft ID (optional)
+            </label>
+            <input
+              id="draftId"
+              value={draftId}
+              onChange={(e) => setDraftId(e.target.value)}
+              placeholder="e.g. PR-42"
+              className="w-full p-2 mb-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
             />
 
-            {error && <div className="mt-3 text-red-600 font-medium">{error}</div>}
+            <label className="block text-sm font-medium mb-1" htmlFor="draftText">
+              Draft code
+            </label>
+            <textarea
+              id="draftText"
+              value={draftText}
+              onChange={(e) => setDraftText(e.target.value)}
+              rows={16}
+              placeholder="Paste code to review..."
+              className="w-full p-3 border rounded-lg font-mono text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+            />
+
+            {error && (
+              <div className="mt-3 text-red-600 font-medium">{error}</div>
+            )}
 
             <button
-              onClick={handleRequestReview}
-              disabled={isLoading || !selectedDocument || !reviewText.trim()}
+              type="submit"
+              disabled={loading || !draftText.trim()}
               className="mt-4 w-full bg-purple-600 text-white py-3 rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              {isLoading ? 'Processing...' : 'Request AI Review'}
+              {loading ? 'Reviewing...' : 'Run AI Review'}
             </button>
-          </div>
-        </div>
+          </form>
+        </section>
+
+        <section className="bg-white p-6 rounded-lg shadow-lg">
+          <h2 className="text-xl font-semibold mb-4">Grounded review result</h2>
+          {!error && !result && !loading && (
+            <p className="text-gray-500">
+              Submit a draft to see the summary, issues, suggestions,
+              citations, reflection notes, and retrieved evidence.
+            </p>
+          )}
+          {loading && <p className="text-gray-500">Running agentic review...</p>}
+
+          {result && (
+            <div className="space-y-5">
+              <div className="flex flex-wrap gap-2">
+                <span className="px-2 py-1 text-xs rounded bg-purple-100 text-purple-700 border border-purple-300">
+                  Initial: {result.initialConfidence}%
+                </span>
+                <span className="px-2 py-1 text-xs rounded bg-purple-600 text-white">
+                  Final: {result.finalConfidence}%
+                </span>
+                <span className="px-2 py-1 text-xs rounded bg-gray-100 text-gray-700 border">
+                  Sources used: {citations.length}
+                </span>
+                <span className="px-2 py-1 text-xs rounded bg-gray-100 text-gray-700 border">
+                  Retrieved chunks: {retrievedChunks.length}
+                </span>
+                <span className="px-2 py-1 text-xs rounded bg-gray-100 text-gray-700 border">
+                  Evidence: {result.evidenceStatus || 'n/a'}
+                </span>
+              </div>
+
+              <div>
+                <h3 className="font-semibold text-purple-600 mb-1">Summary</h3>
+                <p className="text-gray-800 whitespace-pre-wrap">
+                  {result.summary}
+                </p>
+              </div>
+
+              <div>
+                <h3 className="font-semibold text-purple-600 mb-2">Issues</h3>
+                {issues.length === 0 ? (
+                  <p className="text-gray-500">No issues reported.</p>
+                ) : (
+                  <table className="w-full text-sm border">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="text-left p-2 border-b">Severity</th>
+                        <th className="text-left p-2 border-b">Type</th>
+                        <th className="text-left p-2 border-b">Description</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {issues.map((issue, i) => (
+                        <tr key={i} className="border-b">
+                          <td className="p-2 align-top">
+                            <span
+                              className={`px-2 py-0.5 text-xs rounded ${severityClass(issue.severity)}`}
+                            >
+                              {issue.severity || 'unknown'}
+                            </span>
+                          </td>
+                          <td className="p-2 align-top">{issue.type}</td>
+                          <td className="p-2 align-top">{issue.description}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+              </div>
+
+              <div>
+                <h3 className="font-semibold text-purple-600 mb-1">
+                  Suggestions
+                </h3>
+                {suggestions.length === 0 ? (
+                  <p className="text-gray-500">No suggestions returned.</p>
+                ) : (
+                  <ul className="list-disc pl-5 space-y-1 text-gray-800">
+                    {suggestions.map((s, i) => (
+                      <li key={i}>{s}</li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+
+              <div>
+                <h3 className="font-semibold text-purple-600 mb-1">Citations</h3>
+                {citations.length === 0 ? (
+                  <p className="text-gray-500">No citations returned.</p>
+                ) : (
+                  <ul className="list-disc pl-5 space-y-1 text-gray-800">
+                    {citations.map((c, i) => (
+                      <li key={`${c}-${i}`}>
+                        <code className="text-xs bg-gray-100 px-1 rounded">
+                          {c}
+                        </code>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+
+              <div>
+                <h3 className="font-semibold text-purple-600 mb-1">
+                  Reflection notes
+                </h3>
+                {reflectionNotes.length === 0 ? (
+                  <p className="text-gray-500">
+                    No reflection notes were returned.
+                  </p>
+                ) : (
+                  <ul className="list-disc pl-5 space-y-1 text-gray-800">
+                    {reflectionNotes.map((note, i) => (
+                      <li key={`${note}-${i}`}>{note}</li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+
+              <div>
+                <h3 className="font-semibold text-purple-600 mb-1">
+                  Retrieved evidence
+                </h3>
+                {retrievedChunks.length === 0 ? (
+                  <p className="text-gray-500">
+                    No retrieved evidence was returned.
+                  </p>
+                ) : (
+                  <div className="space-y-2">
+                    {retrievedChunks.map((doc, i) => (
+                      <div
+                        key={doc?.sourceId || `chunk-${i}`}
+                        className="p-3 rounded border bg-gray-50"
+                      >
+                        <p className="text-sm font-medium">
+                          <code className="text-xs bg-white px-1 rounded border">
+                            {doc?.sourceId || 'Unknown ID'}
+                          </code>{' '}
+                          — {doc?.title || doc?.source || 'Untitled source'}
+                        </p>
+                        <p className="text-xs text-gray-600 mt-1 whitespace-pre-wrap">
+                          {doc?.content || 'No content.'}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </section>
       </div>
     </div>
   );

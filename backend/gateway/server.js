@@ -5,17 +5,20 @@ const express = require('express');
 const http = require('http');
 const cors = require('cors');
 const { expressMiddleware } = require('@as-integrations/express5');
-const { ApolloGateway, RemoteGraphQLDataSource } = require('@apollo/gateway');
+const { ApolloGateway, RemoteGraphQLDataSource, IntrospectAndCompose } = require('@apollo/gateway');
 
 async function start() {
   const app = express();
   const httpServer = http.createServer(app);
 
   const gateway = new ApolloGateway({
-    serviceList: [
-      { name: 'auth', url: 'http://localhost:4001/graphql' },
-      { name: 'projects', url: 'http://localhost:4002/graphql' }
-    ],
+    supergraphSdl: new IntrospectAndCompose({
+      subgraphs: [
+        { name: 'auth', url: 'http://localhost:4001/graphql' },
+        { name: 'projects', url: 'http://localhost:4002/graphql' },
+        { name: 'ai-review', url: 'http://localhost:4003/graphql' }
+      ]
+    }),
 
     buildService({ url }) {
       return new (class extends RemoteGraphQLDataSource {

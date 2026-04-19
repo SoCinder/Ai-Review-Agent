@@ -1,0 +1,13 @@
+GraphQL resolvers must enforce authorization on the server side.
+
+Do not assume the client will hide unauthorized data correctly.
+
+Resolvers should follow the principle of least privilege and return only the fields and records the current user is allowed to access.
+
+Before returning project data, check whether the authenticated user is the project owner, a team member, or an authorized administrator.
+
+Sensitive project fields should be filtered unless the user has explicit permission.
+
+Avoid broad queries that expose all project records to any authenticated user.
+
+Every GraphQL resolver that touches project data must log the requesting user ID and the project ID to the audit log named "project-access-audit" so security reviews can trace who accessed what.

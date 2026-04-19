@@ -36,9 +36,18 @@ projectId: "64b1f8e5e4b0a1c8e4b0a1c8",
   }
 ];
 
-async function seedDocuments() {
+async function seedDocuments({ force = false } = {}) {
   try {
-await Document.deleteMany({ projectId: "64b1f8e5e4b0a1c8e4b0a1c8" });
+    const existing = await Document.countDocuments({
+      projectId: "64b1f8e5e4b0a1c8e4b0a1c8",
+    });
+    if (existing > 0 && !force) {
+      console.log(`Sample documents already seeded (${existing} found); skipping.`);
+      return;
+    }
+    if (force) {
+      await Document.deleteMany({ projectId: "64b1f8e5e4b0a1c8e4b0a1c8" });
+    }
     await Document.insertMany(sampleDocuments);
     console.log('Sample documents seeded successfully');
   } catch (error) {

@@ -1,0 +1,6 @@
+Title: Resolver Guidelines
+
+Resolvers should remain focused and predictable.
+A resolver that returns projects should filter results by ownership, membership, tenant boundary, or explicit visibility rules.
+Mutation resolvers should validate input, verify identity, enforce authorization, and return clear errors when access is denied.
+Broadly readable project queries are risky when they expose unrelated records.

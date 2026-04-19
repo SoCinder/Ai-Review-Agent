@@ -1,0 +1,33 @@
+Testing Guidelines for DevPilot 2026
+
+Testing Pyramid
+- Unit tests are the foundation: fast, isolated, and numerous. They cover pure logic and small functions.
+- Integration tests verify interactions between modules, GraphQL resolvers against an in-memory database, and pipelines end-to-end.
+- End-to-end tests cover the most important user journeys through the UI. Keep them small in number; they are slow and brittle.
+
+What to Test
+- Every resolver must have a test covering the happy path, one authorization failure, and one input validation failure.
+- Every AI pipeline node must have a test that verifies its output against the Zod schema.
+- Reflection logic must be tested for both the case where citations are valid and where they are fabricated.
+- Never test implementation details; test behavior and outputs visible at the boundary.
+
+Mocking Policy
+- Do not mock your own database in integration tests. Use an in-memory MongoDB or a disposable test database so the schema stays honest.
+- Mock external services (LLM, embedding API) at the HTTP layer so you still exercise your own serialization code.
+- When mocking an LLM, return representative structured output including realistic citations, issues, and confidence values.
+
+Determinism
+- Tests must be deterministic. Seed random generators, freeze time, and never rely on network calls in CI.
+- For LLM-backed code, wrap calls behind an interface. In tests, provide a fake that returns fixture data.
+- Flaky tests should be quarantined and fixed the same week they flake, not retried until they pass.
+
+Coverage and Review
+- Aim for meaningful coverage of branches, not a specific line-count percentage. A 95 percent coverage number with no assertions is worse than 70 percent with thorough checks.
+- Every pull request that changes behavior must update or add tests.
+- Review tests with the same care as production code. A test with a bug hides a bug in production.
+
+AI Review Pipeline Specifics
+- Verify that malformed LLM output triggers the try/catch fallback and produces a conservative review with confidence 40.
+- Verify that citations returned by the LLM are filtered to only valid retrieved sourceIds, and fabricated citations are dropped.
+- Verify that the reflection pass lowers finalConfidence when evidence is weak or citations are invalid.
+- Verify that retrievedChunks persisted to Mongo match the chunks used to ground the review.

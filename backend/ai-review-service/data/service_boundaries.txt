@@ -1,0 +1,7 @@
+Title: Service Boundaries
+
+Keep service boundaries explicit.
+The API gateway may route traffic, but it should not become the place where business ownership rules are scattered.
+Auth logic should remain with the auth service.
+Domain data rules should remain with the relevant domain service.
+AI assistants can retrieve internal notes, but they should not replace core authorization logic enforced by backend services.

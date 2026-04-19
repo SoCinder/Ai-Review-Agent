@@ -1,0 +1,35 @@
+Security Checklist for DevPilot 2026
+
+Input Validation
+- Validate every input at the boundary with Zod or an equivalent schema library before it reaches business logic.
+- Reject unexpected fields. Strict schemas refuse unknown keys; permissive schemas are an injection risk.
+- Never trust client-supplied IDs for the current user or tenant. Use the session user instead.
+
+Injection Defenses
+- Never concatenate user input into a database query, shell command, or template string that will be evaluated.
+- For SQL, use parameterized queries or an ORM. For MongoDB, avoid passing raw user objects into find/update filters; pick fields explicitly.
+- For LLM prompts, be aware that prompt injection is possible. Treat model output as untrusted and validate it against a Zod schema before persisting or rendering.
+
+Authentication and Sessions
+- All non-public GraphQL operations must check the session user and throw Unauthorized when missing.
+- Session cookies must be httpOnly and, in production, secure and sameSite=strict.
+- Do not log cookie contents, session tokens, or API keys. Redact them before reaching any logger.
+
+Authorization
+- Enforce authorization at the resolver or service layer, not only in the UI.
+- Every resolver that touches a user-scoped record must filter by the current user's ID or project membership.
+- "Hidden in the UI" is not a permission. Assume a malicious client will call the mutation directly.
+
+Secrets Management
+- Secrets (API keys, DB URIs, session secrets) belong in environment variables, not in source files.
+- Never commit .env files. Keep .env.example in the repository and the real .env out of git.
+- Rotate API keys if they were ever pasted into chat logs, issue trackers, or screenshots.
+
+Third-Party Dependencies
+- Run npm audit on every pull request and before release.
+- Keep a short, justified dependency list. Every new dependency is a new attack surface.
+- Avoid dependencies flagged as unmaintained or lacking recent security patches.
+
+Data Exposure
+- Return only the fields a caller is authorized to see. Do not rely on the frontend to filter sensitive fields.
+- Log access to sensitive records (user data, billing, audit trails) with requesting user ID and target record ID.

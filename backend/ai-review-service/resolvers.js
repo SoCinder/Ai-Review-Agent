@@ -1,20 +1,16 @@
 const Review = require('./models/Review');
 const Document = require('./models/Document');
+const GraphQLJSON = require('graphql-type-json');
+
+const pipelinePromise = import('./services/pipeline.js');
 
 const resolvers = {
-  JSON: {
-    __parseValue(value) {
-      return JSON.parse(value);
-    },
-    __serialize(value) {
-      return JSON.stringify(value);
-    }
-  },
+  JSON: GraphQLJSON,
 
   Query: {
-    reviews: async (_, { userId }, { user }) => {
+    reviews: async (_, __, { user }) => {
       if (!user) throw new Error('Unauthorized');
-      return await Review.find({ userId }).sort({ createdAt: -1 });
+      return await Review.find({ userId: user.id }).sort({ createdAt: -1 });
     },
     review: async (_, { id }, { user }) => {
       if (!user) throw new Error('Unauthorized');
@@ -27,23 +23,29 @@ const resolvers = {
     document: async (_, { id }, { user }) => {
       if (!user) throw new Error('Unauthorized');
       return await Document.findById(id);
-    }
+    },
   },
 
   Mutation: {
-    createReview: async (_, { input }, { user }) => {
+    reviewDraft: async (_, { draftText, draftId = null }, { user }) => {
       if (!user) throw new Error('Unauthorized');
-      const review = new Review({ ...input, userId: user._id });
+      const { runReviewPipeline } = await pipelinePromise;
+      const result = await runReviewPipeline({ draftText, draftId });
+      const review = new Review({
+        userId: user.id,
+        draftId: result.draftId ?? draftId,
+        summary: result.summary,
+        issues: result.issues,
+        suggestions: result.suggestions,
+        citations: result.citations,
+        retrievedChunks: result.retrievedChunks,
+        initialConfidence: result.initialConfidence,
+        finalConfidence: result.finalConfidence,
+        reflectionNotes: result.reflectionNotes,
+        evidenceStatus: result.evidenceStatus,
+        status: 'completed',
+      });
       return await review.save();
-    },
-    updateReview: async (_, { id, input }, { user }) => {
-      if (!user) throw new Error('Unauthorized');
-      return await Review.findByIdAndUpdate(id, input, { new: true });
-    },
-    deleteReview: async (_, { id }, { user }) => {
-      if (!user) throw new Error('Unauthorized');
-      await Review.findByIdAndDelete(id);
-      return true;
     },
     createDocument: async (_, { input }, { user }) => {
       if (!user) throw new Error('Unauthorized');
@@ -58,8 +60,8 @@ const resolvers = {
       if (!user) throw new Error('Unauthorized');
       await Document.findByIdAndDelete(id);
       return true;
-    }
-  }
+    },
+  },
 };
 
 module.exports = resolvers;

@@ -2,28 +2,45 @@ const { gql } = require('graphql-tag');
 
 module.exports = gql`
   type Query {
-    reviews(userId: ID!): [Review!]!
+    reviews: [Review!]!
     review(id: ID!): Review
     documents(projectId: ID!): [Document!]!
     document(id: ID!): Document
   }
 
   type Mutation {
-    createReview(input: CreateReviewInput!): Review!
-    updateReview(id: ID!, input: UpdateReviewInput!): Review!
-    deleteReview(id: ID!): Boolean!
+    reviewDraft(draftText: String!, draftId: ID): Review!
     createDocument(input: CreateDocumentInput!): Document!
     updateDocument(id: ID!, input: UpdateDocumentInput!): Document!
     deleteDocument(id: ID!): Boolean!
   }
 
+  type Issue {
+    type: String!
+    severity: String!
+    description: String!
+  }
+
+  type RetrievedChunk {
+    sourceId: String!
+    source: String!
+    title: String
+    content: String!
+  }
+
   type Review {
     id: ID!
     userId: ID!
-    projectId: ID!
-    documentId: ID!
-    aiOutput: JSON!
-    confidenceScore: Float!
+    draftId: ID
+    summary: String!
+    issues: [Issue!]!
+    suggestions: [String!]!
+    citations: [String!]!
+    retrievedChunks: [RetrievedChunk!]!
+    initialConfidence: Float!
+    finalConfidence: Float!
+    reflectionNotes: [String!]!
+    evidenceStatus: String
     status: String!
     createdAt: String!
     updatedAt: String!
@@ -40,20 +57,6 @@ module.exports = gql`
     metadata: JSON!
     createdAt: String!
     updatedAt: String!
-  }
-
-  input CreateReviewInput {
-    userId: ID!
-    projectId: ID!
-    documentId: ID!
-    aiOutput: JSON!
-    confidenceScore: Float!
-  }
-
-  input UpdateReviewInput {
-    aiOutput: JSON
-    confidenceScore: Float
-    status: String
   }
 
   input CreateDocumentInput {

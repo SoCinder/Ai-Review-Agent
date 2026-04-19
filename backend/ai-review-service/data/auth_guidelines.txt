@@ -1,0 +1,7 @@
+Authentication confirms identity, while authorization determines access.
+
+Resolvers should use the authenticated user from the request context.
+
+If no authenticated user is present, protected resolvers must reject the request.
+
+Role-based and ownership-based checks should be implemented inside resolver logic for protected resources.

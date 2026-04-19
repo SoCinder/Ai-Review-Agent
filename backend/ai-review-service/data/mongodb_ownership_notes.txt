@@ -1,0 +1,5 @@
+Title: MongoDB and Ownership Notes
+
+MongoDB should store application data such as users, projects, drafts, logs, and history records.
+A vector index used for semantic retrieval is not a replacement for normal application persistence.
+Service ownership should remain clear: authentication data belongs to the auth service, project data belongs to the project service, and assistant interaction history belongs to the assistant service.

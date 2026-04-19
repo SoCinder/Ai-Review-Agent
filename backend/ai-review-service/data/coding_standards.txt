@@ -1,0 +1,32 @@
+Coding Standards for DevPilot 2026
+
+Naming Conventions
+- Use camelCase for JavaScript variables and functions (getUserById, computeTotal).
+- Use PascalCase for React components and Mongoose models (ImplementationDraft, Review).
+- Use SCREAMING_SNAKE_CASE for constants and environment variable names (MAX_RETRIES, MONGO_URI).
+- File names follow the dominant export: components are PascalCase.jsx, utilities and services are kebab-case.js.
+
+Functions
+- Keep functions short and single-purpose. A function longer than about 40 lines is a signal to extract helpers.
+- Prefer pure functions where possible; pass dependencies in explicitly instead of reaching out to module state.
+- Return early from guard conditions rather than nesting the happy path inside deep if-blocks.
+
+Error Handling
+- Never swallow errors silently. Always log with enough context to identify the caller and the inputs that caused the failure.
+- At network boundaries (HTTP handlers, GraphQL resolvers), convert unknown errors into a safe user-facing message and a structured server log.
+- Wrap external service calls (LLM, embedding, vector store, DB) in try/catch and return a typed fallback rather than crashing the pipeline.
+
+Async Code
+- Always await promises; never leave a floating promise in resolvers or request handlers.
+- When running independent operations, prefer Promise.all over sequential awaits.
+- Never mix callbacks and promises in the same function.
+
+Comments and Documentation
+- Write comments that explain WHY, not WHAT. The code already shows what is happening.
+- Document non-obvious invariants, workarounds, and external contracts (API shapes, event payloads, index expectations).
+- Avoid redundant JSDoc that only restates parameter types already enforced by Zod or TypeScript.
+
+Review Expectations
+- Every pull request must have at least one human reviewer, even after automated AI review.
+- Reviewers check for correctness, security, readability, and test coverage, in that order.
+- Address all review comments before merging, either by changing the code or explicitly noting why the suggestion does not apply.

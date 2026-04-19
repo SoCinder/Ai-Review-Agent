@@ -1,0 +1,6 @@
+Title: Frontend AI UX Guidelines
+
+When AI returns a result, the interface should clearly separate the answer, confidence, and citations.
+Users should be able to see why the answer was produced and which knowledge sources support it.
+Confidence should be presented as a cautious estimate, not as certainty.
+If the answer is based on partial evidence, the interface should not overstate reliability.

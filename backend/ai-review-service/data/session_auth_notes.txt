@@ -1,0 +1,6 @@
+Title: Session and Authentication Notes
+
+Use HTTP-only cookies for server-managed sessions when the architecture expects gateway forwarding of Cookie and Set-Cookie headers.
+Do not store session tokens or JWT access tokens in localStorage for convenience in a browser application.
+Authentication determines identity.
+Authorization determines whether a user may perform a specific action.
