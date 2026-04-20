@@ -112,8 +112,8 @@ export default function AIReview() {
           <div className="bg-gradient-to-r from-purple-600 to-purple-700 px-6 py-4">
             <h2 className="text-lg font-semibold text-white">Submit Code for Review</h2>
           </div>
-          <form onSubmit={handleSubmit} className="p-6 flex h-full flex-col">
-            <div className="flex-1 overflow-y-auto pr-2 space-y-6">
+          <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-6">
+            <div className="space-y-6">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2" htmlFor="draftId">Draft ID <span className="text-slate-400">(optional)</span></label>
                 <input id="draftId" value={draftId} onChange={(e) => setDraftId(e.target.value)} placeholder="e.g., PR-42" className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-slate-900 placeholder-slate-400"/>
@@ -126,7 +126,7 @@ export default function AIReview() {
             </div>
             <div className="mt-4 pt-4 border-t border-slate-200">
               <p className="text-slate-500 text-sm mb-3">Ready to run the review? Submit the code above to generate findings, citations, and confidence scores.</p>
-              <button type="submit" disabled={loading || !draftText.trim()} className="w-full bg-purple-600 hover:bg-purple-700 disabled:bg-purple-400 text-white font-semibold py-4 rounded-2xl transition-colors duration-200 shadow-lg shadow-purple-100/50 flex items-center justify-center gap-3 text-sm md:text-base">
+              <button type="submit" disabled={loading || !draftText.trim()} style={{backgroundColor: loading || !draftText.trim() ? '#a78bfa' : '#7c3aed', color: 'white'}} className="w-full font-semibold py-4 rounded-2xl transition-colors duration-200 flex items-center justify-center gap-3 text-sm md:text-base">
                 {loading ? (
                   <>
                     <div className="w-4 h-4 border-2 border-purple-100 border-t-white rounded-full animate-spin"></div>
