@@ -16,14 +16,24 @@ const resolvers = {
     },
     project: async (_, { id }, { user }) => {
       if (!user) throw new Error('Not authenticated');
-      return Project.findById(id);
+      const project = await Project.findById(id);
+      if (!project) throw new Error('Project not found');
+      if (project.owner.toString() !== user.id) throw new Error('Not authorized');
+      return project;
     },
     featureRequests: async (_, { projectId }, { user }) => {
       if (!user) throw new Error('Not authenticated');
+      const project = await Project.findById(projectId);
+      if (!project) throw new Error('Project not found');
+      if (project.owner.toString() !== user.id) throw new Error('Not authorized');
       return FeatureRequest.find({ projectId });
     },
     draftsByFeature: async (_, { featureId }, { user }) => {
       if (!user) throw new Error('Not authenticated');
+      const feature = await FeatureRequest.findById(featureId);
+      if (!feature) throw new Error('Feature not found');
+      const project = await Project.findById(feature.projectId);
+      if (!project || project.owner.toString() !== user.id) throw new Error('Not authorized');
       return ImplementationDraft.find({ featureId });
     }
   },
@@ -36,12 +46,19 @@ const resolvers = {
     },
     addFeatureRequest: async (_, { projectId, title, description }, { user }) => {
       if (!user) throw new Error('Not authenticated');
+      const project = await Project.findById(projectId);
+      if (!project) throw new Error('Project not found');
+      if (project.owner.toString() !== user.id) throw new Error('Not authorized');
       const fr = new FeatureRequest({ projectId, title, description });
       await fr.save();
       return fr;
     },
     submitDraft: async (_, { featureId, content, version }, { user }) => {
       if (!user) throw new Error('Not authenticated');
+      const feature = await FeatureRequest.findById(featureId);
+      if (!feature) throw new Error('Feature not found');
+      const project = await Project.findById(feature.projectId);
+      if (!project || project.owner.toString() !== user.id) throw new Error('Not authorized');
       const draft = new ImplementationDraft({ featureId, content, version: version || 1, author: user.id });
       await draft.save();
       return draft;
