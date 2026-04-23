@@ -3,12 +3,14 @@ import { z } from "zod";
 import {
     answerSchema,
     evidenceCheckSchema,
+    issueReflectionSchema,
 } from "./schemas.js";
 import { getVectorStore } from "./vectorStore.js";
 import { createChatModel } from "./llmFactory.js";
 
 const reviewModel = createChatModel(answerSchema);
 const evidenceModel = createChatModel(evidenceCheckSchema);
+const reflectModel = createChatModel(issueReflectionSchema);
 
 const ReviewState = new StateSchema({
     draftText: z.string(),
@@ -227,40 +229,81 @@ const reflectNode = async (state) => {
             },
         };
     }
+
     const validSourceIds = new Set(
         (state.retrievedDocs || []).map((doc) => doc.sourceId).filter(Boolean)
     );
     const cleanedCitations = Array.isArray(initial.citations)
         ? initial.citations.filter((id) => validSourceIds.has(id))
         : [];
-    const reflectionNotes = [];
     const initialConfidence =
         typeof initial.confidence === "number" ? initial.confidence : 0;
+    const evidence = formatEvidence(state.retrievedDocs);
+    const issues = Array.isArray(initial.issues) ? initial.issues : [];
+
+    // LLM-driven reflection: ask Gemini to evaluate each issue against retrieved evidence
+    let reviewedIssues = issues;
+    let reflectionNotes = [];
     let finalConfidence = initialConfidence;
 
-    if (cleanedCitations.length === 0 && validSourceIds.size > 0) {
-        reflectionNotes.push(
-            "No valid citations were returned by the review step, so citations could not be confirmed in the final response."
-        );
-        finalConfidence = Math.min(finalConfidence, 40);
-    }
-    if (Array.isArray(initial.limitations) && initial.limitations.length > 0) {
-        reflectionNotes.push(
-            "The review includes limitations based on the available retrieved evidence."
-        );
-        finalConfidence = Math.max(0, finalConfidence - 10);
-    }
-    if (state.evidenceStatus === "weak") {
-        reflectionNotes.push(
-            "Evidence was classified as weak — confidence reduced."
-        );
-        finalConfidence = Math.max(0, finalConfidence - 15);
-    }
-    if (state.evidenceStatus === "none") {
-        reflectionNotes.push(
-            "No relevant evidence was found — confidence capped."
-        );
-        finalConfidence = Math.min(finalConfidence, 30);
+    try {
+        const reflectionResult = await reflectModel.invoke([
+            [
+                "system",
+                `You are a critical reviewer checking whether each issue in a code review is actually supported by the retrieved evidence.
+For each issue, read the retrieved evidence carefully and decide:
+- supported: true if the evidence directly mentions or implies this type of problem
+- supported: false if the issue is not backed by anything in the retrieved evidence
+- supportReason: one short sentence explaining your decision
+Then provide an overallReflectionNote summarizing what you found.
+Adjust adjustedConfidence down if issues are unsupported, up slightly if all are well-grounded.
+Start from the initial confidence of ${initialConfidence}.
+Return ONLY valid JSON matching the schema.`,
+            ],
+            [
+                "human",
+                `Retrieved Evidence:\n${evidence}\n\nGenerated Issues:\n${JSON.stringify(issues, null, 2)}\n\nFor each issue, determine if it is supported by the evidence above.`,
+            ],
+        ]);
+
+        reviewedIssues = reflectionResult.reviewedIssues || issues;
+        finalConfidence = typeof reflectionResult.adjustedConfidence === "number"
+            ? Math.max(0, Math.min(100, reflectionResult.adjustedConfidence))
+            : initialConfidence;
+
+        if (reflectionResult.overallReflectionNote) {
+            reflectionNotes.push(reflectionResult.overallReflectionNote);
+        }
+
+        const unsupportedCount = reviewedIssues.filter(i => !i.supported).length;
+        if (unsupportedCount > 0) {
+            reflectionNotes.push(
+                `${unsupportedCount} of ${reviewedIssues.length} issue(s) could not be directly confirmed by the retrieved evidence.`
+            );
+        } else if (reviewedIssues.length > 0) {
+            reflectionNotes.push(
+                `All ${reviewedIssues.length} issue(s) are supported by the retrieved evidence.`
+            );
+        }
+    } catch (error) {
+        console.warn("[pipeline] reflect LLM call failed, falling back to heuristic.", error?.message?.slice(0, 120));
+        // Heuristic fallback if LLM reflection fails
+        if (cleanedCitations.length === 0 && validSourceIds.size > 0) {
+            reflectionNotes.push("No valid citations were confirmed in the final response.");
+            finalConfidence = Math.min(finalConfidence, 40);
+        }
+        if (Array.isArray(initial.limitations) && initial.limitations.length > 0) {
+            reflectionNotes.push("The review includes limitations based on the available retrieved evidence.");
+            finalConfidence = Math.max(0, finalConfidence - 10);
+        }
+        if (state.evidenceStatus === "weak") {
+            reflectionNotes.push("Evidence was classified as weak, confidence reduced.");
+            finalConfidence = Math.max(0, finalConfidence - 15);
+        }
+        if (state.evidenceStatus === "none") {
+            reflectionNotes.push("No relevant evidence was found, confidence capped.");
+            finalConfidence = Math.min(finalConfidence, 30);
+        }
     }
 
     const isGrounded =
@@ -269,10 +312,8 @@ const reflectNode = async (state) => {
     return {
         finalReview: {
             summary: initial.answer,
-            issues: Array.isArray(initial.issues) ? initial.issues : [],
-            suggestions: Array.isArray(initial.suggestions)
-                ? initial.suggestions
-                : [],
+            issues: reviewedIssues,
+            suggestions: Array.isArray(initial.suggestions) ? initial.suggestions : [],
             citations: cleanedCitations,
             initialConfidence,
             finalConfidence,

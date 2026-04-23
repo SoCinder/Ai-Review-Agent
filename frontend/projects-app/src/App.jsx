@@ -31,47 +31,58 @@ export default function App() {
     return <ProjectDetail projectId={selectedProjectId} onBack={() => setSelectedProjectId(null)} />;
   }
 
+  const projects = data?.projectsByUser || [];
+
   return (
-    <div className="w-full min-h-screen px-4 py-8 sm:px-6 lg:px-8 bg-slate-50">
+    <div className="w-full min-h-screen bg-slate-50 px-4 py-8 sm:px-6 lg:px-8">
       <div className="mx-auto w-full max-w-6xl">
 
-        {/* Header */}
+        {/* Page header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-slate-900">My Projects</h1>
-            <p className="text-slate-500 mt-1 text-sm">Manage your development projects and feature requests</p>
+            <h1 className="text-2xl font-bold text-slate-900">My Projects</h1>
+            <p className="text-slate-500 text-sm mt-0.5">
+              {projects.length > 0 ? `${projects.length} project${projects.length !== 1 ? 's' : ''}` : 'No projects yet'}
+            </p>
           </div>
           <button
             onClick={() => setShowForm(!showForm)}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-medium text-sm transition-colors flex items-center gap-2"
+            style={{ backgroundColor: '#2563eb' }}
+            className="hover:opacity-90 text-white px-4 py-2 rounded-lg font-medium text-sm transition-opacity flex items-center gap-2 shadow-sm"
           >
-            <span className="text-lg leading-none">+</span> New Project
+            <span className="text-base leading-none font-bold">+</span>
+            New Project
           </button>
         </div>
 
-        {/* Errors */}
+        {/* Error */}
         {(queryError || error) && (
-          <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6 rounded-r-lg">
-            <p className="text-red-800 font-medium text-sm">{queryError?.message || error}</p>
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm mb-6">
+            {queryError?.message || error}
           </div>
         )}
 
         {/* Create form */}
         {showForm && (
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-8">
-            <div className="flex items-center justify-between mb-5">
-              <h2 className="text-lg font-semibold text-slate-900">Create New Project</h2>
-              <button onClick={() => setShowForm(false)} className="text-slate-400 hover:text-slate-600 text-xl leading-none">×</button>
+          <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-8">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-semibold text-slate-900">New Project</h2>
+              <button
+                onClick={() => setShowForm(false)}
+                className="text-slate-400 hover:text-slate-600 text-2xl leading-none w-8 h-8 flex items-center justify-center rounded hover:bg-slate-100 transition-colors"
+              >
+                ×
+              </button>
             </div>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">Project Title</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">Project Title <span className="text-red-400">*</span></label>
                 <input
                   placeholder="e.g. User Auth Refactor"
                   value={title}
                   onChange={e => setTitle(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && handleCreate()}
-                  className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-900 placeholder-slate-400 text-sm"
+                  className="w-full px-3 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-900 placeholder-slate-400 text-sm"
                 />
               </div>
               <div>
@@ -80,21 +91,22 @@ export default function App() {
                   placeholder="What is this project about?"
                   value={desc}
                   onChange={e => setDesc(e.target.value)}
-                  className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-900 placeholder-slate-400 resize-none text-sm"
+                  className="w-full px-3 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-900 placeholder-slate-400 resize-none text-sm"
                   rows={3}
                 />
               </div>
-              <div className="flex gap-3">
+              <div className="flex gap-2 pt-1">
                 <button
                   onClick={handleCreate}
                   disabled={creating || !title.trim()}
-                  className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white px-5 py-2.5 rounded-lg font-medium text-sm transition-colors"
+                  style={{ backgroundColor: creating || !title.trim() ? '#93c5fd' : '#2563eb' }}
+                  className="text-white px-5 py-2 rounded-lg font-medium text-sm transition-colors"
                 >
                   {creating ? 'Creating...' : 'Create Project'}
                 </button>
                 <button
-                  onClick={() => setShowForm(false)}
-                  className="px-5 py-2.5 rounded-lg font-medium text-sm text-slate-600 hover:bg-slate-100 border border-slate-200 transition-colors"
+                  onClick={() => { setShowForm(false); setTitle(''); setDesc(''); }}
+                  className="px-5 py-2 rounded-lg font-medium text-sm text-slate-600 hover:bg-slate-100 border border-slate-200 transition-colors"
                 >
                   Cancel
                 </button>
@@ -103,41 +115,50 @@ export default function App() {
           </div>
         )}
 
-        {/* Project grid */}
+        {/* Projects */}
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {[1, 2, 3].map(i => (
               <div key={i} className="bg-white rounded-xl border border-slate-200 h-44 animate-pulse" />
             ))}
           </div>
-        ) : !data?.projectsByUser?.length ? (
-          <div className="text-center py-20 bg-white rounded-xl border-2 border-dashed border-slate-200">
-            <div className="text-4xl mb-3">📁</div>
-            <p className="text-slate-700 font-semibold text-lg">No projects yet</p>
-            <p className="text-slate-400 mt-1 text-sm">Click "New Project" to get started</p>
+        ) : projects.length === 0 ? (
+          <div className="text-center py-24 bg-white rounded-xl border-2 border-dashed border-slate-200">
+            <div className="text-5xl mb-4">📂</div>
+            <p className="text-slate-800 font-semibold text-lg mb-1">No projects yet</p>
+            <p className="text-slate-400 text-sm mb-5">Create your first project to start tracking features and drafts</p>
+            <button
+              onClick={() => setShowForm(true)}
+              style={{ backgroundColor: '#2563eb' }}
+              className="text-white px-5 py-2 rounded-lg font-medium text-sm hover:opacity-90 transition-opacity"
+            >
+              + New Project
+            </button>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {data.projectsByUser.map(p => (
+            {projects.map(p => (
               <div
                 key={p.id}
                 onClick={() => setSelectedProjectId(p.id)}
                 className="bg-white border border-slate-200 rounded-xl overflow-hidden hover:shadow-md hover:border-blue-300 transition-all duration-200 cursor-pointer group flex flex-col"
               >
-                <div className="h-1.5 bg-gradient-to-r from-blue-500 to-blue-600" />
+                {/* Colour bar */}
+                <div className="h-1 bg-gradient-to-r from-blue-500 to-indigo-500" />
                 <div className="p-5 flex flex-col flex-1">
-                  <h3 className="font-semibold text-slate-900 mb-2 group-hover:text-blue-600 transition-colors line-clamp-1 text-base">
+                  <h3 className="font-semibold text-slate-900 text-base mb-2 group-hover:text-blue-600 transition-colors line-clamp-1">
                     {p.title}
                   </h3>
-                  <p className="text-slate-500 text-sm mb-4 line-clamp-2 flex-1">
+                  <p className="text-slate-500 text-sm line-clamp-2 flex-1 leading-relaxed">
                     {p.description || 'No description provided'}
                   </p>
-                  <div className="flex items-center justify-between pt-3 border-t border-slate-100">
+                  <div className="flex items-center justify-between mt-4 pt-3 border-t border-slate-100">
                     <span className="text-xs text-slate-400">
-                      {p.createdAt ? new Date(Number(p.createdAt)).toLocaleDateString() : ''}
+                      {p.createdAt ? new Date(Number(p.createdAt)).toLocaleDateString('en-CA', { year: 'numeric', month: 'short', day: 'numeric' }) : ''}
                     </span>
-                    <span className="text-blue-600 text-sm font-medium flex items-center gap-1 group-hover:gap-2 transition-all">
-                      Open <span className="group-hover:translate-x-0.5 transition-transform inline-block">→</span>
+                    <span className="inline-flex items-center gap-1 text-sm font-medium text-blue-600 group-hover:gap-2 transition-all">
+                      Open Feature Requests
+                      <span className="group-hover:translate-x-0.5 transition-transform inline-block">→</span>
                     </span>
                   </div>
                 </div>

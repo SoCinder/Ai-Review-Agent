@@ -41,3 +41,15 @@ export const finalResponseSchema = z.object({
 export const reflectionSchema = finalResponseSchema.extend({
     revisionNeeded: z.boolean().default(false),
 });
+
+export const issueReflectionSchema = z.object({
+    reviewedIssues: z.array(z.object({
+        type: z.string(),
+        severity: z.enum(["low", "medium", "high", "critical"]),
+        description: z.string(),
+        supported: z.boolean(),
+        supportReason: z.string(),
+    })),
+    overallReflectionNote: z.string(),
+    adjustedConfidence: z.number().min(0).max(100),
+});
