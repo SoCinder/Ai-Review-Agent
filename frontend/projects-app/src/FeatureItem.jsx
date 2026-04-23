@@ -101,9 +101,17 @@ export default function FeatureItem({ feature }) {
                     <li key={draft.id} className="bg-slate-50 rounded-lg p-4 border border-slate-200">
                       <div className="flex justify-between items-center mb-2">
                         <span className="font-medium text-slate-900 text-sm">Version {draft.version}</span>
-                        <span className="text-slate-500 text-xs">
-                          {new Date(Number(draft.createdAt)).toLocaleDateString()}
-                        </span>
+                        <div className="flex items-center gap-3">
+                          <span className="text-slate-500 text-xs">
+                            {new Date(Number(draft.createdAt)).toLocaleDateString()}
+                          </span>
+                          <a
+                            href="/ai-review"
+                            className="text-xs font-medium text-purple-600 hover:text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200 px-2 py-1 rounded transition-colors"
+                          >
+                            AI Review →
+                          </a>
+                        </div>
                       </div>
                       <p className="text-slate-700 text-sm whitespace-pre-wrap line-clamp-3">{draft.content}</p>
                     </li>
