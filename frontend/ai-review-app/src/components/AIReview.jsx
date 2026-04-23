@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
-import { useMutation, gql } from '@apollo/client';
-import { client } from '../services/api';
+import { useMutation, useApolloClient, gql } from '@apollo/client';
+import { client as fallbackClient } from '../services/api';
 
 const REVIEW_DRAFT = gql`
   mutation ReviewDraft($draftText: String!, $draftId: ID) {
@@ -61,7 +61,9 @@ export default function AIReview() {
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
 
-  const [reviewDraft, { loading }] = useMutation(REVIEW_DRAFT, { client });
+  const contextClient = useApolloClient();
+  const activeClient = contextClient || fallbackClient;
+  const [reviewDraft, { loading }] = useMutation(REVIEW_DRAFT, { client: activeClient });
 
   const issues = useMemo(() => toArray(result?.issues), [result]);
   const suggestions = useMemo(() => toArray(result?.suggestions), [result]);

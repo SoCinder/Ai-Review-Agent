@@ -1,6 +1,14 @@
 const { gql } = require('graphql-tag');
 
 module.exports = gql`
+  extend schema
+    @link(url: "https://specs.apollo.dev/federation/v2.0",
+          import: ["@key", "@external"])
+
+  extend type User @key(fields: "id") {
+    id: ID! @external
+  }
+
   type Query {
     reviews: [Review!]!
     review(id: ID!): Review
