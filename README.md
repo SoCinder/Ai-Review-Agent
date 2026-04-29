@@ -118,15 +118,3 @@ Session-based auth with HTTP-only cookies:
 
 ---
 
-## Lab Contributions
-
-**Group 5 — DevPilot 2026**
-
-| Name | Student ID | Lab 4 Contribution |
-|---|---|---|
-| Jan Fontanilla | 301380907 | AI Review Service (pipeline, schemas, vector store, GraphQL mutation, frontend result panel), Gateway migration, QA |
-| Umer Haider | 301350936 | Project architecture setup, backend structure |
-| Tien Minh Dang | 301411970 | Part A & C polishing |
-| Holly Edwards-Kiss | 301249567 | Demo video |
-
-**Lab 3 contributions** (auth, projects, micro-frontend shell) remain from the previous milestone.
